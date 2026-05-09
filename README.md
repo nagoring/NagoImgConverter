@@ -51,8 +51,20 @@ npm install
 ./run-dev.sh
 ```
 
-## 将来対応予定（v2 以降）
+## TODO
 
-- AVIF / TIFF / HEIC
-- 出力解像度・リサイズ設定
-- メタデータ（EXIF）保持
+### 優先度：高
+- [ ] 実動作テスト（PNG→JPEG / PNG→WebP / 透過PNG→JPEG など）
+- [ ] アプリアイコン作成（現在はプレースホルダーの青い正方形）
+- [ ] リリースビルド確認（`./run-build.sh` で `.dmg` / `.app` が生成されるか）
+
+### 優先度：中
+- [ ] TIFF 対応（`image` クレートの `tiff` feature を有効化するだけ）
+- [ ] AVIF 対応（`ravif` クレートを追加、純 Rust で依存少）
+- [ ] 出力解像度・リサイズ設定
+
+### 優先度：低
+- [ ] HEIC 対応（macOS 限定。ImageIO FFI または `libheif-rs`）
+- [ ] メタデータ（EXIF / PNG metadata）保持（UI は実装済み、Rust 側が未実装）
+- [ ] 設定プリセット保存（よく使う形式・品質をワンクリックで呼び出し）
+- [ ] アニメーション GIF の変換対応（現在は最初のフレームのみ）
