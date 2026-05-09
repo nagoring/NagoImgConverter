@@ -3,6 +3,7 @@ pub mod gif;
 pub mod jpeg;
 pub mod png;
 pub mod webp;
+mod tests;
 
 use crate::error::ConvertError;
 use serde::Deserialize;
