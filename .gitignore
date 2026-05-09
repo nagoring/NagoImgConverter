@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+src-tauri/target/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+
+# macOS
+.DS_Store
+
+# Tauri generated schemas
+src-tauri/gen/
+
+# Logs
+*.log
