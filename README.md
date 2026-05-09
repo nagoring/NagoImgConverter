@@ -54,7 +54,7 @@ npm install
 ## TODO
 
 ### 優先度：高
-- [ ] 実動作テスト（PNG→JPEG / PNG→WebP / 透過PNG→JPEG など）
+- [x] 実動作テスト（PNG→JPEG / PNG→WebP / 透過PNG→JPEG など）
 - [ ] アプリアイコン作成（現在はプレースホルダーの青い正方形）
 - [ ] リリースビルド確認（`./run-build.sh` で `.dmg` / `.app` が生成されるか）
 
