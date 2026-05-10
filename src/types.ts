@@ -1,8 +1,22 @@
 export type OutputFormat = "png" | "jpeg" | "webp" | "gif" | "bmp";
 
+export type ResizeMode = "widthHeight" | "longSide" | "percent";
+export type ResizeFilter = "lanczos3" | "bilinear" | "nearest";
+
+export interface ResizeSettings {
+  enabled: boolean;
+  mode: ResizeMode;
+  width: number;
+  height: number;
+  longSide: number;
+  percent: number;
+  filter: ResizeFilter;
+}
+
 export interface FormatOptions {
   format: OutputFormat;
   quality?: number; // jpeg: 1-100, webp: 0-100 (100 = lossless)
+  pngOptimize?: boolean; // PNG lossless optimization (oxipng)
 }
 
 export interface FileEntry {

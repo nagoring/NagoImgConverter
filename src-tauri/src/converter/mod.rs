@@ -6,6 +6,7 @@ pub mod webp;
 mod tests;
 
 use crate::error::ConvertError;
+use image::{imageops::FilterType, DynamicImage};
 use serde::Deserialize;
 use std::path::PathBuf;
 
@@ -17,7 +18,10 @@ fn default_jpeg_quality() -> u8 {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(tag = "format", rename_all = "lowercase")]
 pub enum FormatOptions {
-    Png,
+    Png {
+        #[serde(default)]
+        optimize: bool,
+    },
     Jpeg {
         #[serde(default = "default_jpeg_quality")]
         quality: u8, // 1-100
@@ -28,13 +32,12 @@ pub enum FormatOptions {
     },
     Gif,
     Bmp,
-    // Extension point: add Heic, Avif, Tiff variants here in future versions
 }
 
 impl FormatOptions {
     pub fn extension(&self) -> &'static str {
         match self {
-            Self::Png => "png",
+            Self::Png { .. } => "png",
             Self::Jpeg { .. } => "jpg",
             Self::Webp { .. } => "webp",
             Self::Gif => "gif",
@@ -43,13 +46,82 @@ impl FormatOptions {
     }
 }
 
+// ── Resize ────────────────────────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub enum ResizeMode {
+    WidthHeight,
+    LongSide,
+    Percent,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ResizeFilter {
+    Lanczos3,
+    Bilinear,
+    Nearest,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ResizeParams {
+    pub mode: ResizeMode,
+    pub filter: ResizeFilter,
+    pub width: Option<u32>,
+    pub height: Option<u32>,
+    pub long_side: Option<u32>,
+    pub percent: Option<f32>,
+}
+
+pub fn apply_resize(img: DynamicImage, r: &ResizeParams) -> DynamicImage {
+    let filter = match r.filter {
+        ResizeFilter::Lanczos3 => FilterType::Lanczos3,
+        ResizeFilter::Bilinear => FilterType::Triangle,
+        ResizeFilter::Nearest => FilterType::Nearest,
+    };
+    let (w, h) = (img.width(), img.height());
+    match r.mode {
+        ResizeMode::WidthHeight => {
+            let nw = r.width.unwrap_or(w);
+            let nh = r.height.unwrap_or(h);
+            img.resize(nw, nh, filter)
+        }
+        ResizeMode::LongSide => {
+            let size = r.long_side.unwrap_or(w.max(h));
+            if w >= h {
+                img.resize(size, u32::MAX, filter)
+            } else {
+                img.resize(u32::MAX, size, filter)
+            }
+        }
+        ResizeMode::Percent => {
+            let pct = r.percent.unwrap_or(100.0);
+            let nw = ((w as f32 * pct / 100.0).round() as u32).max(1);
+            let nh = ((h as f32 * pct / 100.0).round() as u32).max(1);
+            img.resize_exact(nw, nh, filter)
+        }
+    }
+}
+
+pub fn maybe_resize(img: DynamicImage, resize: &Option<ResizeParams>) -> DynamicImage {
+    match resize {
+        Some(r) => apply_resize(img, r),
+        None => img,
+    }
+}
+
+// ── Converter trait ───────────────────────────────────────────────────────────
+
 /// Parameters passed to every converter.
 #[derive(Debug, Clone)]
 pub struct ConvertParams {
     pub input_path: PathBuf,
     pub output_path: PathBuf,
     pub options: FormatOptions,
-    pub preserve_metadata: bool, // v1: stored but ignored; ready for EXIF support later
+    pub preserve_metadata: bool,
+    pub resize: Option<ResizeParams>,
 }
 
 /// Core converter trait. Each output format implements this.

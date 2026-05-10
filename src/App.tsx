@@ -5,6 +5,8 @@ import { FormatSelector } from "./components/Settings/FormatSelector";
 import { QualitySlider } from "./components/Settings/QualitySlider";
 import { OutputFolderPicker } from "./components/Settings/OutputFolderPicker";
 import { MetadataToggle } from "./components/Settings/MetadataToggle";
+import { PngOptimizeToggle } from "./components/Settings/PngOptimizeToggle";
+import { ResizePanel } from "./components/Settings/ResizePanel";
 import { ConvertButton } from "./components/ConvertButton";
 import { ProgressBar } from "./components/ProgressBar";
 import { SummaryReport } from "./components/SummaryReport";
@@ -42,6 +44,9 @@ export function App() {
         <aside className="w-72 flex-shrink-0 bg-white border-l border-gray-200 flex flex-col gap-5 p-5 overflow-y-auto">
           <FormatSelector />
           <QualitySlider />
+          <PngOptimizeToggle />
+          <hr className="border-gray-100" />
+          <ResizePanel />
           <hr className="border-gray-100" />
           <OutputFolderPicker />
           <hr className="border-gray-100" />

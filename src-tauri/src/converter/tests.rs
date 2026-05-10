@@ -16,6 +16,16 @@ mod tests {
         DynamicImage::ImageRgba8(img)
     }
 
+    /// 全ピクセルが不透明な RGBA 画像を生成する
+    fn make_opaque_image() -> DynamicImage {
+        let img = ImageBuffer::from_fn(100, 100, |x, y| {
+            let r = (x * 2) as u8;
+            let b = (y * 2) as u8;
+            Rgba([r, 0, b, 255u8])
+        });
+        DynamicImage::ImageRgba8(img)
+    }
+
     fn run_conversion(input: &PathBuf, options: FormatOptions, output_dir: &PathBuf) -> PathBuf {
         let ext = options.extension();
         let output = output_dir.join(format!("output.{ext}"));
@@ -25,6 +35,7 @@ mod tests {
             output_path: output.clone(),
             options,
             preserve_metadata: false,
+            resize: None,
         };
         let converter = registry.find(&params.options).expect("converter not found");
         converter.convert(&params).expect("conversion failed");
@@ -41,7 +52,7 @@ mod tests {
     fn png_to_png() {
         let dir = tempdir().unwrap();
         let input = save_test_png(&dir.path().to_path_buf());
-        let output = run_conversion(&input, FormatOptions::Png, &dir.path().to_path_buf());
+        let output = run_conversion(&input, FormatOptions::Png { optimize: false }, &dir.path().to_path_buf());
         assert!(output.exists(), "PNG output does not exist");
         let img = image::open(&output).expect("failed to open PNG output");
         assert_eq!(img.width(), 100);
@@ -135,6 +146,36 @@ mod tests {
     }
 
     #[test]
+    fn png_optimize_reduces_size() {
+        let dir = tempdir().unwrap();
+        let dir2 = tempdir().unwrap();
+        let input = save_test_png(&dir.path().to_path_buf());
+
+        let plain = run_conversion(&input, FormatOptions::Png { optimize: false }, &dir.path().to_path_buf());
+        let optimized = run_conversion(&input, FormatOptions::Png { optimize: true }, &dir2.path().to_path_buf());
+
+        let plain_size = std::fs::metadata(&plain).unwrap().len();
+        let opt_size = std::fs::metadata(&optimized).unwrap().len();
+        assert!(opt_size <= plain_size, "optimized PNG ({opt_size}) should be <= plain ({plain_size})");
+    }
+
+    #[test]
+    fn png_optimize_strips_alpha_when_all_opaque() {
+        let dir = tempdir().unwrap();
+        let input = dir.path().join("opaque.png");
+        make_opaque_image().save(&input).unwrap();
+
+        let output = run_conversion(&input, FormatOptions::Png { optimize: true }, &dir.path().to_path_buf());
+        let img = image::open(&output).expect("failed to open optimized PNG");
+        // 出力は RGB（アルファなし）になっているはず
+        assert!(
+            !img.color().has_alpha(),
+            "fully opaque RGBA should be converted to RGB, got {:?}",
+            img.color()
+        );
+    }
+
+    #[test]
     fn invalid_file_returns_error() {
         let dir = tempdir().unwrap();
         let bad = dir.path().join("bad.png");
@@ -145,6 +186,7 @@ mod tests {
             output_path: dir.path().join("out.jpg"),
             options: FormatOptions::Jpeg { quality: 85 },
             preserve_metadata: false,
+            resize: None,
         };
         let converter = registry.find(&params.options).unwrap();
         assert!(converter.convert(&params).is_err(), "should fail on invalid file");

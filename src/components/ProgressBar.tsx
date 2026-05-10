@@ -12,17 +12,28 @@ export function ProgressBar() {
 
   if (!isConverting && done === 0) return null;
 
+  const isIndeterminate = isConverting && done === 0;
+
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-xs text-gray-500">
-        <span>{done} / {total} 完了</span>
-        <span>{pct}%</span>
+        <span className="flex items-center gap-1.5">
+          {isConverting && (
+            <span className="inline-block w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          )}
+          {isIndeterminate ? "変換中…" : `${done} / ${total} 完了`}
+        </span>
+        {!isIndeterminate && <span>{pct}%</span>}
       </div>
       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-blue-500 rounded-full transition-all duration-300"
-          style={{ width: `${pct}%` }}
-        />
+        {isIndeterminate ? (
+          <div className="h-full w-1/3 bg-blue-500 rounded-full animate-indeterminate" />
+        ) : (
+          <div
+            className="h-full bg-blue-500 rounded-full transition-all duration-300"
+            style={{ width: `${pct}%` }}
+          />
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-use crate::converter::{ConvertParams, FormatOptions, ImageConverter};
+use crate::converter::{maybe_resize, ConvertParams, FormatOptions, ImageConverter};
 use crate::error::ConvertError;
 use image::ImageFormat;
 use std::fs;
@@ -21,6 +21,7 @@ impl ImageConverter for WebPConverter {
         };
 
         let img = image::open(&params.input_path)?;
+        let img = maybe_resize(img, &params.resize);
 
         match quality {
             None => {
@@ -29,7 +30,6 @@ impl ImageConverter for WebPConverter {
             }
             Some(q) => {
                 // Lossy encoding via the `webp` crate (libwebp FFI).
-                // quality=100 means near-lossless; use None branch for true lossless.
                 let rgba = img.to_rgba8();
                 let (width, height) = rgba.dimensions();
                 let encoder = ::webp::Encoder::from_rgba(rgba.as_raw(), width, height);

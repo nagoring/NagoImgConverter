@@ -1,4 +1,4 @@
-use crate::converter::{ConvertParams, FormatOptions, ImageConverter};
+use crate::converter::{maybe_resize, ConvertParams, FormatOptions, ImageConverter};
 use crate::error::ConvertError;
 use image::DynamicImage;
 use std::fs::File;
@@ -22,6 +22,7 @@ impl ImageConverter for JpegConverter {
         };
 
         let img = image::open(&params.input_path)?;
+        let img = maybe_resize(img, &params.resize);
 
         // JPEG has no alpha channel. Composite transparency onto a white background.
         let rgb = DynamicImage::ImageRgb8(img.to_rgb8());

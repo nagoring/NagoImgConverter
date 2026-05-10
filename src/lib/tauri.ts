@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { OutputFormat } from "../types";
+import type { OutputFormat, ResizeSettings } from "../types";
 
 export interface FileInfo {
   path: string;
@@ -10,17 +10,37 @@ export interface FileInfo {
 
 // The serde-tagged JSON shape that Rust's FormatOptions expects.
 export type RustFormatOptions =
-  | { format: "png" }
+  | { format: "png"; optimize?: boolean }
   | { format: "jpeg"; quality: number }
   | { format: "webp"; quality?: number }
   | { format: "gif" }
   | { format: "bmp" };
+
+export interface RustResizeParams {
+  mode: "widthHeight" | "longSide" | "percent";
+  filter: "lanczos3" | "bilinear" | "nearest";
+  width?: number;
+  height?: number;
+  longSide?: number;
+  percent?: number;
+}
 
 export interface ConvertRequest {
   files: string[];
   outputDir: string;
   options: RustFormatOptions;
   preserveMetadata: boolean;
+  resize?: RustResizeParams;
+}
+
+export function buildResizeParams(s: ResizeSettings): RustResizeParams | undefined {
+  if (!s.enabled) return undefined;
+  const base = { mode: s.mode, filter: s.filter } as const;
+  switch (s.mode) {
+    case "widthHeight": return { ...base, width: s.width, height: s.height };
+    case "longSide":    return { ...base, longSide: s.longSide };
+    case "percent":     return { ...base, percent: s.percent };
+  }
 }
 
 export const getFileInfo = (paths: string[]): Promise<FileInfo[]> =>
@@ -35,7 +55,8 @@ export const convertImages = (request: ConvertRequest): Promise<void> =>
 /// Build the serde-tagged RustFormatOptions object expected by Rust.
 export function buildRustOptions(
   format: OutputFormat,
-  quality?: number
+  quality?: number,
+  pngOptimize?: boolean
 ): RustFormatOptions {
   switch (format) {
     case "jpeg":
@@ -46,7 +67,7 @@ export function buildRustOptions(
       return q >= 100 ? { format: "webp" } : { format: "webp", quality: q };
     }
     case "png":
-      return { format: "png" };
+      return pngOptimize ? { format: "png", optimize: true } : { format: "png" };
     case "gif":
       return { format: "gif" };
     case "bmp":

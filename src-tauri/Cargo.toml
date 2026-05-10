@@ -28,6 +28,7 @@ image        = { version = "0.25", default-features = false, features = [
 ] }
 webp         = "0.3"
 
+oxipng       = "10"
 rayon        = "1"
 thiserror    = "2"
 log          = "0.4"

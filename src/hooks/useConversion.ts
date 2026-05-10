@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import { convertImages, buildRustOptions } from "../lib/tauri";
+import { convertImages, buildRustOptions, buildResizeParams } from "../lib/tauri";
 import { useConverterStore } from "../store/useConverterStore";
 import type { ProgressEventPayload, OutputFormat } from "../types";
 
@@ -55,7 +55,8 @@ export function useConversion() {
 
     const options = buildRustOptions(
       store.formatOptions.format as OutputFormat,
-      store.formatOptions.quality
+      store.formatOptions.quality,
+      store.formatOptions.pngOptimize
     );
 
     await convertImages({
@@ -63,6 +64,7 @@ export function useConversion() {
       outputDir: store.outputDir,
       options,
       preserveMetadata: false,
+      resize: buildResizeParams(store.resizeSettings),
     }).catch((e: unknown) => {
       console.error("convert_images failed:", e);
       store.setConverting(false);

@@ -1,7 +1,6 @@
-use crate::converter::{ConvertParams, ConverterRegistry, FormatOptions};
+use crate::converter::{ConvertParams, ConverterRegistry, FormatOptions, ResizeParams};
 use crate::error::ConvertError;
 use crate::fs_utils;
-use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -26,6 +25,7 @@ pub struct ConvertRequest {
     pub output_dir: String,
     pub options: FormatOptions,
     pub preserve_metadata: bool,
+    pub resize: Option<ResizeParams>,
 }
 
 /// Progress events emitted from Rust to the React frontend.
@@ -77,69 +77,88 @@ pub fn validate_output_dir(dir: String) -> Result<bool, String> {
 }
 
 /// Batch-convert files. Emits a `ProgressEvent` per file and `AllDone` at the end.
-/// Uses rayon for parallel per-file conversion without blocking the UI thread.
+///
+/// Each file runs on its own OS thread so that converters using rayon internally
+/// (e.g. oxipng) can freely use the global rayon thread pool without nesting
+/// conflicts.
 #[tauri::command]
 pub fn convert_images(app: AppHandle, request: ConvertRequest) -> Result<(), ConvertError> {
     let registry = Arc::new(ConverterRegistry::new());
-    let output_dir = PathBuf::from(&request.output_dir);
+    let output_dir = Arc::new(PathBuf::from(&request.output_dir));
+    let options = Arc::new(request.options);
+    let resize = Arc::new(request.resize);
     let total = request.files.len();
 
-    let results: Vec<bool> = request
-        .files
-        .par_iter()
-        .map(|file_path| {
-            let input = PathBuf::from(file_path);
-            let output = fs_utils::resolve_output_path(
-                &input,
-                &output_dir,
-                request.options.extension(),
-            );
+    let results: Vec<bool> = std::thread::scope(|s| {
+        let handles: Vec<_> = request
+            .files
+            .iter()
+            .map(|file_path| {
+                let app = app.clone();
+                let registry = Arc::clone(&registry);
+                let output_dir = Arc::clone(&output_dir);
+                let options = Arc::clone(&options);
+                let resize = Arc::clone(&resize);
+                let file_path = file_path.clone();
 
-            let _ = app.emit("progress", ProgressEvent::Started { path: file_path.clone() });
-
-            let params = ConvertParams {
-                input_path: input,
-                output_path: output.clone(),
-                options: request.options.clone(),
-                preserve_metadata: request.preserve_metadata,
-            };
-
-            match registry.find(&params.options) {
-                None => {
-                    let _ = app.emit(
-                        "progress",
-                        ProgressEvent::Failed {
-                            path: file_path.clone(),
-                            error: "No converter found for the selected format".to_string(),
-                        },
+                s.spawn(move || {
+                    let input = PathBuf::from(&file_path);
+                    let output = fs_utils::resolve_output_path(
+                        &input,
+                        &output_dir,
+                        options.extension(),
                     );
-                    false
-                }
-                Some(converter) => match converter.convert(&params) {
-                    Ok(_) => {
-                        let _ = app.emit(
-                            "progress",
-                            ProgressEvent::Completed {
-                                path: file_path.clone(),
-                                output_path: output.to_string_lossy().into_owned(),
-                            },
-                        );
-                        true
+
+                    let _ = app.emit("progress", ProgressEvent::Started { path: file_path.clone() });
+
+                    let params = ConvertParams {
+                        input_path: input,
+                        output_path: output.clone(),
+                        options: (*options).clone(),
+                        preserve_metadata: request.preserve_metadata,
+                        resize: (*resize).clone(),
+                    };
+
+                    match registry.find(&params.options) {
+                        None => {
+                            let _ = app.emit(
+                                "progress",
+                                ProgressEvent::Failed {
+                                    path: file_path.clone(),
+                                    error: "No converter found for the selected format".to_string(),
+                                },
+                            );
+                            false
+                        }
+                        Some(converter) => match converter.convert(&params) {
+                            Ok(_) => {
+                                let _ = app.emit(
+                                    "progress",
+                                    ProgressEvent::Completed {
+                                        path: file_path.clone(),
+                                        output_path: output.to_string_lossy().into_owned(),
+                                    },
+                                );
+                                true
+                            }
+                            Err(e) => {
+                                let _ = app.emit(
+                                    "progress",
+                                    ProgressEvent::Failed {
+                                        path: file_path.clone(),
+                                        error: e.to_string(),
+                                    },
+                                );
+                                false
+                            }
+                        },
                     }
-                    Err(e) => {
-                        let _ = app.emit(
-                            "progress",
-                            ProgressEvent::Failed {
-                                path: file_path.clone(),
-                                error: e.to_string(),
-                            },
-                        );
-                        false
-                    }
-                },
-            }
-        })
-        .collect();
+                })
+            })
+            .collect();
+
+        handles.into_iter().map(|h| h.join().unwrap_or(false)).collect()
+    });
 
     let succeeded = results.iter().filter(|&&b| b).count();
     let failed = total - succeeded;
