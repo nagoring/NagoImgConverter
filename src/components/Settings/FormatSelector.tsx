@@ -8,6 +8,7 @@ const FORMATS: { value: OutputFormat; label: string }[] = [
   { value: "gif",  label: "GIF"  },
   { value: "bmp",  label: "BMP"  },
   { value: "tiff", label: "TIFF" },
+  { value: "avif", label: "AVIF" },
 ];
 
 export function FormatSelector() {

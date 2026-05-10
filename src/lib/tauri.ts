@@ -15,7 +15,8 @@ export type RustFormatOptions =
   | { format: "webp"; quality?: number }
   | { format: "gif" }
   | { format: "bmp" }
-  | { format: "tiff" };
+  | { format: "tiff" }
+  | { format: "avif"; quality: number };
 
 export interface RustResizeParams {
   mode: "widthHeight" | "longSide" | "percent";
@@ -75,5 +76,7 @@ export function buildRustOptions(
       return { format: "bmp" };
     case "tiff":
       return { format: "tiff" };
+    case "avif":
+      return { format: "avif", quality: quality ?? 80 };
   }
 }

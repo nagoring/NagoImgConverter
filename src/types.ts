@@ -1,4 +1,4 @@
-export type OutputFormat = "png" | "jpeg" | "webp" | "gif" | "bmp" | "tiff";
+export type OutputFormat = "png" | "jpeg" | "webp" | "gif" | "bmp" | "tiff" | "avif";
 
 export type ResizeMode = "widthHeight" | "longSide" | "percent";
 export type ResizeFilter = "lanczos3" | "bilinear" | "nearest";

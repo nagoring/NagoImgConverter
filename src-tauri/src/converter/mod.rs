@@ -1,3 +1,4 @@
+pub mod avif;
 pub mod bmp;
 pub mod gif;
 pub mod jpeg;
@@ -13,6 +14,10 @@ use std::path::PathBuf;
 
 fn default_jpeg_quality() -> u8 {
     85
+}
+
+fn default_avif_quality() -> f32 {
+    80.0
 }
 
 /// Per-format encoder options (serde-tagged for JSON deserialization from JS).
@@ -34,6 +39,10 @@ pub enum FormatOptions {
     Gif,
     Bmp,
     Tiff,
+    Avif {
+        #[serde(default = "default_avif_quality")]
+        quality: f32, // 1-100
+    },
 }
 
 impl FormatOptions {
@@ -45,6 +54,7 @@ impl FormatOptions {
             Self::Gif => "gif",
             Self::Bmp => "bmp",
             Self::Tiff => "tiff",
+            Self::Avif { .. } => "avif",
         }
     }
 }
@@ -149,6 +159,7 @@ impl ConverterRegistry {
                 Box::new(gif::GifConverter),
                 Box::new(bmp::BmpConverter),
                 Box::new(tiff::TiffConverter),
+                Box::new(avif::AvifConverter),
             ],
         }
     }

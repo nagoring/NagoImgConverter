@@ -6,9 +6,9 @@ export function QualitySlider() {
   const setQuality = useConverterStore((s) => s.setQuality);
   const isConverting = useConverterStore((s) => s.isConverting);
 
-  if (format !== "jpeg" && format !== "webp") return null;
+  if (format !== "jpeg" && format !== "webp" && format !== "avif") return null;
 
-  const currentQuality = quality ?? (format === "jpeg" ? 85 : 100);
+  const currentQuality = quality ?? (format === "jpeg" ? 85 : format === "avif" ? 80 : 100);
   const isWebP = format === "webp";
   const losslessLabel = isWebP && currentQuality >= 100 ? "（可逆）" : "";
 
@@ -40,6 +40,11 @@ export function QualitySlider() {
       {format === "jpeg" && (
         <p className="text-xs text-gray-400 mt-1">
           ※ JPEG は透過情報を保持できません（白背景に合成されます）
+        </p>
+      )}
+      {format === "avif" && (
+        <p className="text-xs text-gray-400 mt-1">
+          高品質・高圧縮。透過（アルファ）に対応
         </p>
       )}
     </div>
