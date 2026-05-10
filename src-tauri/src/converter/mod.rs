@@ -2,6 +2,7 @@ pub mod bmp;
 pub mod gif;
 pub mod jpeg;
 pub mod png;
+pub mod tiff;
 pub mod webp;
 mod tests;
 
@@ -32,6 +33,7 @@ pub enum FormatOptions {
     },
     Gif,
     Bmp,
+    Tiff,
 }
 
 impl FormatOptions {
@@ -42,6 +44,7 @@ impl FormatOptions {
             Self::Webp { .. } => "webp",
             Self::Gif => "gif",
             Self::Bmp => "bmp",
+            Self::Tiff => "tiff",
         }
     }
 }
@@ -145,6 +148,7 @@ impl ConverterRegistry {
                 Box::new(webp::WebPConverter),
                 Box::new(gif::GifConverter),
                 Box::new(bmp::BmpConverter),
+                Box::new(tiff::TiffConverter),
             ],
         }
     }

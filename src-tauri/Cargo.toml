@@ -24,7 +24,7 @@ serde        = { version = "1", features = ["derive"] }
 serde_json   = "1"
 
 image        = { version = "0.25", default-features = false, features = [
-    "png", "jpeg", "gif", "bmp", "webp"
+    "png", "jpeg", "gif", "bmp", "webp", "tiff"
 ] }
 webp         = "0.3"
 

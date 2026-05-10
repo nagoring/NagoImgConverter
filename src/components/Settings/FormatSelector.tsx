@@ -7,6 +7,7 @@ const FORMATS: { value: OutputFormat; label: string }[] = [
   { value: "webp", label: "WebP" },
   { value: "gif",  label: "GIF"  },
   { value: "bmp",  label: "BMP"  },
+  { value: "tiff", label: "TIFF" },
 ];
 
 export function FormatSelector() {

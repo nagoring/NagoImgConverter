@@ -14,7 +14,8 @@ export type RustFormatOptions =
   | { format: "jpeg"; quality: number }
   | { format: "webp"; quality?: number }
   | { format: "gif" }
-  | { format: "bmp" };
+  | { format: "bmp" }
+  | { format: "tiff" };
 
 export interface RustResizeParams {
   mode: "widthHeight" | "longSide" | "percent";
@@ -72,5 +73,7 @@ export function buildRustOptions(
       return { format: "gif" };
     case "bmp":
       return { format: "bmp" };
+    case "tiff":
+      return { format: "tiff" };
   }
 }
