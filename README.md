@@ -59,9 +59,12 @@ npm install
 - [x] リリースビルド確認（`.app` 31MB / `.dmg` 3.1MB 生成済み）
 
 ### 優先度：中
+- [ ] **容量削減機能**
+  - 出力解像度のリサイズ（幅・高さ指定 / 長辺指定 / パーセント指定）
+  - 目標ファイルサイズ指定（例：1MB 以下になるまで品質を自動調整）
+  - リサイズアルゴリズム選択（Lanczos / Nearest / Bilinear）
 - [ ] TIFF 対応（`image` クレートの `tiff` feature を有効化するだけ）
 - [ ] AVIF 対応（`ravif` クレートを追加、純 Rust で依存少）
-- [ ] 出力解像度・リサイズ設定
 
 ### 優先度：低
 - [ ] HEIC 対応（macOS 限定。ImageIO FFI または `libheif-rs`）
