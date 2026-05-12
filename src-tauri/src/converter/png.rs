@@ -22,6 +22,10 @@ impl ImageConverter for PngConverter {
 
         let img = image::open(&params.input_path)?;
         let img = maybe_resize(img, &params.resize);
+        let img = match &params.bg_remover {
+            Some(r) => r.remove(&img)?,
+            None => img,
+        };
 
         // Strip alpha channel when all pixels are fully opaque.
         let img = if optimize && img.color().has_alpha() {

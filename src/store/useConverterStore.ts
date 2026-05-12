@@ -7,6 +7,8 @@ import type {
   ResizeSettings,
   ResizeMode,
   ResizeFilter,
+  TargetSizeSettings,
+  BgRemovalSettings,
 } from "../types";
 
 interface ConverterState {
@@ -14,6 +16,9 @@ interface ConverterState {
   outputDir: string;
   formatOptions: FormatOptions;
   resizeSettings: ResizeSettings;
+  targetSize: TargetSizeSettings;
+  bgRemoval: BgRemovalSettings;
+  bgModelStatus: string;
   isConverting: boolean;
   isDraggingOver: boolean;
   summary: ConversionSummary | null;
@@ -32,6 +37,10 @@ interface ConverterState {
   setResizeLongSide: (s: number) => void;
   setResizePercent: (p: number) => void;
   setResizeFilter: (f: ResizeFilter) => void;
+  setTargetSizeEnabled: (v: boolean) => void;
+  setTargetSizeKb: (kb: number) => void;
+  setBgRemovalEnabled: (v: boolean) => void;
+  setBgModelStatus: (s: string) => void;
   setFileStatus: (
     path: string,
     status: FileEntry["status"],
@@ -47,6 +56,9 @@ export const useConverterStore = create<ConverterState>((set) => ({
   files: [],
   outputDir: "",
   formatOptions: { format: "png" },
+  targetSize: { enabled: false, kb: 500 },
+  bgRemoval: { enabled: false },
+  bgModelStatus: "",
   resizeSettings: {
     enabled: false,
     mode: "longSide",
@@ -91,6 +103,12 @@ export const useConverterStore = create<ConverterState>((set) => ({
   setResizeLongSide: (longSide) => set((s) => ({ resizeSettings: { ...s.resizeSettings, longSide } })),
   setResizePercent: (percent) => set((s) => ({ resizeSettings: { ...s.resizeSettings, percent } })),
   setResizeFilter: (filter) => set((s) => ({ resizeSettings: { ...s.resizeSettings, filter } })),
+
+  setTargetSizeEnabled: (v) => set((s) => ({ targetSize: { ...s.targetSize, enabled: v } })),
+  setTargetSizeKb: (kb) => set((s) => ({ targetSize: { ...s.targetSize, kb } })),
+
+  setBgRemovalEnabled: (v) => set((s) => ({ bgRemoval: { ...s.bgRemoval, enabled: v } })),
+  setBgModelStatus: (bgModelStatus) => set({ bgModelStatus }),
 
   setFileStatus: (path, status, extra = {}) =>
     set((s) => ({

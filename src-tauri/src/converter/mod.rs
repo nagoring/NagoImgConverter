@@ -7,10 +7,12 @@ pub mod tiff;
 pub mod webp;
 mod tests;
 
+use crate::bg_removal::BgRemover;
 use crate::error::ConvertError;
 use image::{imageops::FilterType, DynamicImage};
 use serde::Deserialize;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 fn default_jpeg_quality() -> u8 {
     85
@@ -135,6 +137,35 @@ pub struct ConvertParams {
     pub options: FormatOptions,
     pub preserve_metadata: bool,
     pub resize: Option<ResizeParams>,
+    pub target_size_bytes: Option<u64>,
+    pub bg_remover: Option<Arc<BgRemover>>,
+}
+
+/// Binary-search the highest quality (lo..=hi) whose encoded output fits
+/// within `target_bytes`. Returns the best result found; falls back to `lo`
+/// if nothing fits.
+pub fn binary_search_quality<F>(
+    target_bytes: u64,
+    lo: u8,
+    hi: u8,
+    mut encode: F,
+) -> Result<Vec<u8>, ConvertError>
+where
+    F: FnMut(u8) -> Result<Vec<u8>, ConvertError>,
+{
+    let (mut lo, mut hi) = (lo as i32, hi as i32);
+    let mut best = encode(lo as u8)?; // lowest quality as fallback
+    while lo <= hi {
+        let mid = (lo + hi) / 2;
+        let data = encode(mid as u8)?;
+        if data.len() as u64 <= target_bytes {
+            best = data;
+            lo = mid + 1; // try higher quality
+        } else {
+            hi = mid - 1; // try lower quality
+        }
+    }
+    Ok(best)
 }
 
 /// Core converter trait. Each output format implements this.

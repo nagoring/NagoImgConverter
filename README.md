@@ -4,19 +4,22 @@
 
 **Tauri v2 + React + TypeScript + Rust** で構築。Windows / macOS / Linux に対応。
 
-## 対応形式（v1）
+## 対応形式
 
 | 入力 | 出力 |
 |---|---|
-| PNG / JPEG / WebP / GIF / BMP | PNG / JPEG / WebP / GIF / BMP |
+| PNG / JPEG / WebP / GIF / BMP / TIFF | PNG / JPEG / WebP / GIF / BMP / TIFF / AVIF |
 
 ## 機能
 
 - ドラッグ&ドロップで複数ファイルを追加
 - 出力先は自動でファイルと同じフォルダに設定
-- JPEG / WebP の品質設定
+- JPEG / WebP / AVIF の品質設定
 - WebP: 100 = 可逆（lossless）/ 1-99 = 非可逆（lossy）
-- JPEG: 透過を白背景に合成してエンコード
+- JPEG / AVIF: 透過を白背景に合成してエンコード
+- PNG 可逆最適化（oxipng 再圧縮・メタデータ除去・不透明 RGBA→RGB 変換）
+- リサイズ（長辺指定 / 幅×高さ / パーセント、アルゴリズム選択）
+- 目標ファイルサイズ指定（JPEG / WebP / AVIF: 指定 KB 以下になるまで品質を自動調整）
 - 同名ファイルがある場合は `_converted` サフィックスで保存
 - 並列変換で大量ファイルも高速処理
 
@@ -59,29 +62,21 @@ npm install
 - [x] リリースビルド確認（`.app` 31MB / `.dmg` 3.1MB 生成済み）
 
 ### 優先度：中
-- [ ] **容量削減機能**
+- [x] **容量削減機能**
+  - [x] PNG 可逆最適化（oxipng 再圧縮・メタデータ除去・不透明 RGBA→RGB 変換）
+  - [x] リサイズ（長辺指定 / 幅×高さ / パーセント、アルゴリズム選択）
+  - [x] 目標ファイルサイズ指定（JPEG / WebP / AVIF: 品質を二分探索で自動調整）
+- [x] TIFF 対応
+- [x] AVIF 対応
 
-  **① 品質・解像度を変えずに削減（可逆最適化）**
-  - PNG 再圧縮 — `oxipng` クレートで再エンコード。同じ見た目のまま 20〜50% 削減できる場合がある
-  - メタデータ除去 — EXIF・ICC プロファイル・コメントを削除（UI 設計済み、Rust 側未実装）
-  - 不透明 PNG のアルファ除去 — 全ピクセルが不透明な場合は RGBA→RGB に変換してサイズ削減
-  - PNG → 可逆 WebP 変換 — 同じ画質のまま WebP lossless は PNG より平均 26% 小さい
+- [x] **背景透過（AI）**
 
-  **② 品質を下げずに知覚的に削減（非可逆最適化）**
-  - JPEG クロマサブサンプリング選択（4:4:4 / 4:2:0）— 色差成分を間引く。人間の目には差が出にくい
-  - 目標ファイルサイズ指定（例：500KB 以下になるまで品質を二分探索で自動調整）
+  U2-Net-p ONNX モデルによるセグメンテーションで被写体を残して背景を透明化。
 
-  **③ 解像度変更による削減**
-  - リサイズ（幅・高さ指定 / 長辺指定 / パーセント指定）
-  - リサイズアルゴリズム選択（Lanczos3 / Bilinear / Nearest）
-
-  **実装メモ**
-  - `oxipng` クレートで PNG 最適化（`optimize_from_memory` API）
-  - JPEG クロマサブサンプリングは `image` クレートの `JpegEncoder` に設定可能
-  - 目標サイズ自動調整は品質を二分探索してエンコードを繰り返す（Rust 側のみで完結）
-
-- [ ] TIFF 対応（`image` クレートの `tiff` feature を有効化するだけ）
-- [ ] AVIF 対応（`ravif` クレートを追加、純 Rust で依存少）
+  - 出力形式は PNG / WebP（透過対応フォーマット）に限定
+  - `tract-onnx`（純 Rust ONNX 推論）でモデルを実行
+  - 初回実行時に約 5MB のモデル（u2netp.onnx）をアプリデータフォルダへ自動ダウンロード
+  - 複数ファイルでも 1 回のモデルロードで済む（Arc 共有）
 
 ### 優先度：低
 - [ ] HEIC 対応（macOS 限定。ImageIO FFI または `libheif-rs`）

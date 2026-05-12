@@ -1,11 +1,11 @@
+use crate::bg_removal::BgRemover;
 use crate::converter::{ConvertParams, ConverterRegistry, FormatOptions, ResizeParams};
 use crate::error::ConvertError;
 use crate::fs_utils;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::sync::Arc;
-use tauri::AppHandle;
-use tauri::Emitter;
+use tauri::{AppHandle, Emitter, Manager};
 
 // ── DTOs ─────────────────────────────────────────────────────────────────────
 
@@ -26,6 +26,8 @@ pub struct ConvertRequest {
     pub options: FormatOptions,
     pub preserve_metadata: bool,
     pub resize: Option<ResizeParams>,
+    pub target_size_kb: Option<u32>,
+    pub bg_removal: bool,
 }
 
 /// Progress events emitted from Rust to the React frontend.
@@ -87,6 +89,19 @@ pub fn convert_images(app: AppHandle, request: ConvertRequest) -> Result<(), Con
     let output_dir = Arc::new(PathBuf::from(&request.output_dir));
     let options = Arc::new(request.options);
     let resize = Arc::new(request.resize);
+    let target_size_bytes = request.target_size_kb.map(|kb| kb as u64 * 1024);
+
+    // Load the AI background removal model once (may trigger a first-time download).
+    let bg_remover: Arc<Option<Arc<BgRemover>>> = Arc::new(if request.bg_removal {
+        let data_dir = app
+            .path()
+            .app_data_dir()
+            .map_err(|e| ConvertError::Encode(e.to_string()))?;
+        Some(Arc::new(BgRemover::load(&app, &data_dir)?))
+    } else {
+        None
+    });
+
     let total = request.files.len();
 
     let results: Vec<bool> = std::thread::scope(|s| {
@@ -99,6 +114,7 @@ pub fn convert_images(app: AppHandle, request: ConvertRequest) -> Result<(), Con
                 let output_dir = Arc::clone(&output_dir);
                 let options = Arc::clone(&options);
                 let resize = Arc::clone(&resize);
+                let bg_remover = Arc::clone(&bg_remover);
                 let file_path = file_path.clone();
 
                 s.spawn(move || {
@@ -117,6 +133,8 @@ pub fn convert_images(app: AppHandle, request: ConvertRequest) -> Result<(), Con
                         options: (*options).clone(),
                         preserve_metadata: request.preserve_metadata,
                         resize: (*resize).clone(),
+                        target_size_bytes,
+                        bg_remover: (*bg_remover).as_ref().map(Arc::clone),
                     };
 
                     match registry.find(&params.options) {

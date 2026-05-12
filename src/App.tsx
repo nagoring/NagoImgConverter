@@ -7,6 +7,8 @@ import { OutputFolderPicker } from "./components/Settings/OutputFolderPicker";
 import { MetadataToggle } from "./components/Settings/MetadataToggle";
 import { PngOptimizeToggle } from "./components/Settings/PngOptimizeToggle";
 import { ResizePanel } from "./components/Settings/ResizePanel";
+import { TargetSizeInput } from "./components/Settings/TargetSizeInput";
+import { BgRemovalPanel } from "./components/Settings/BgRemovalPanel";
 import { ConvertButton } from "./components/ConvertButton";
 import { ProgressBar } from "./components/ProgressBar";
 import { SummaryReport } from "./components/SummaryReport";
@@ -45,6 +47,8 @@ export function App() {
           <FormatSelector />
           <QualitySlider />
           <PngOptimizeToggle />
+          <TargetSizeInput />
+          <BgRemovalPanel />
           <hr className="border-gray-100" />
           <ResizePanel />
           <hr className="border-gray-100" />

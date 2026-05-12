@@ -19,6 +19,15 @@ export interface FormatOptions {
   pngOptimize?: boolean; // PNG lossless optimization (oxipng)
 }
 
+export interface TargetSizeSettings {
+  enabled: boolean;
+  kb: number;
+}
+
+export interface BgRemovalSettings {
+  enabled: boolean;
+}
+
 export interface FileEntry {
   path: string;
   name: string;

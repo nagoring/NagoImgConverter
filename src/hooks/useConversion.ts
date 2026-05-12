@@ -9,6 +9,13 @@ export function useConversion() {
   const unlistenRef = useRef<UnlistenFn | null>(null);
 
   useEffect(() => {
+    const unlistenStatus = listen<string>("bg_model_status", (event) => {
+      store.setBgModelStatus(event.payload);
+    });
+    return () => { unlistenStatus.then((fn) => fn()); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
     listen<ProgressEventPayload>("progress", (event) => {
       const payload = event.payload;
       switch (payload.type) {
@@ -65,8 +72,23 @@ export function useConversion() {
       options,
       preserveMetadata: false,
       resize: buildResizeParams(store.resizeSettings),
+      targetSizeKb: store.targetSize.enabled ? store.targetSize.kb : undefined,
+      bgRemoval: store.bgRemoval.enabled,
     }).catch((e: unknown) => {
       console.error("convert_images failed:", e);
+      // Extract the human-readable message from Tauri's serialised ConvertError enum.
+      const msg =
+        typeof e === "object" && e !== null
+          ? (Object.values(e as Record<string, unknown>)[0] as string) ??
+            JSON.stringify(e)
+          : String(e);
+      alert(`変換に失敗しました:\n${msg}`);
+      // Mark any still-pending files as failed so the UI doesn't freeze.
+      store.files.forEach((f) => {
+        if (f.status === "pending" || f.status === "converting") {
+          store.setFileStatus(f.path, "failed", { errorMessage: msg });
+        }
+      });
       store.setConverting(false);
     });
   }, [store]);

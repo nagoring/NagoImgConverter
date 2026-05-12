@@ -1,3 +1,4 @@
+mod bg_removal;
 mod commands;
 mod converter;
 mod error;

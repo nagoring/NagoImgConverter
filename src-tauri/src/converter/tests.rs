@@ -36,6 +36,8 @@ mod tests {
             options,
             preserve_metadata: false,
             resize: None,
+            target_size_bytes: None,
+            bg_remover: None,
         };
         let converter = registry.find(&params.options).expect("converter not found");
         converter.convert(&params).expect("conversion failed");
@@ -176,6 +178,25 @@ mod tests {
     }
 
     #[test]
+    fn bg_remover_loads_and_runs() {
+        let model_path = std::path::Path::new("/tmp/u2netp_test.onnx");
+        if !model_path.exists() {
+            eprintln!("Skipping: model not at /tmp/u2netp_test.onnx");
+            return;
+        }
+        use crate::bg_removal::BgRemover;
+        let remover = BgRemover::load_from_path(model_path)
+            .expect("BgRemover::load_from_path should succeed");
+
+        let img = make_test_image();
+        let result = remover.remove(&img).expect("remove() should succeed");
+        assert_eq!(result.width(), 100);
+        assert_eq!(result.height(), 100);
+        // Result must be RGBA
+        assert!(result.color().has_alpha(), "output should have alpha channel");
+    }
+
+    #[test]
     fn invalid_file_returns_error() {
         let dir = tempdir().unwrap();
         let bad = dir.path().join("bad.png");
@@ -187,6 +208,8 @@ mod tests {
             options: FormatOptions::Jpeg { quality: 85 },
             preserve_metadata: false,
             resize: None,
+            target_size_bytes: None,
+            bg_remover: None,
         };
         let converter = registry.find(&params.options).unwrap();
         assert!(converter.convert(&params).is_err(), "should fail on invalid file");

@@ -33,6 +33,8 @@ export interface ConvertRequest {
   options: RustFormatOptions;
   preserveMetadata: boolean;
   resize?: RustResizeParams;
+  targetSizeKb?: number;
+  bgRemoval: boolean;
 }
 
 export function buildResizeParams(s: ResizeSettings): RustResizeParams | undefined {
