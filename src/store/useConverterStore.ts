@@ -40,6 +40,8 @@ interface ConverterState {
   setResizeFilter: (f: ResizeFilter) => void;
   setTargetSizeEnabled: (v: boolean) => void;
   setTargetSizeKb: (kb: number) => void;
+  filenameTemplate: string;
+  setFilenameTemplate: (t: string) => void;
   setBgRemovalEnabled: (v: boolean) => void;
   setBgModel: (model: BgModel) => void;
   setBgModelStatus: (s: string) => void;
@@ -59,6 +61,7 @@ export const useConverterStore = create<ConverterState>((set) => ({
   outputDir: "",
   formatOptions: { format: "png" },
   targetSize: { enabled: false, kb: 500 },
+  filenameTemplate: "{name}",
   bgRemoval: { enabled: false, model: "general" as BgModel },
   bgModelStatus: "",
   resizeSettings: {
@@ -108,6 +111,7 @@ export const useConverterStore = create<ConverterState>((set) => ({
 
   setTargetSizeEnabled: (v) => set((s) => ({ targetSize: { ...s.targetSize, enabled: v } })),
   setTargetSizeKb: (kb) => set((s) => ({ targetSize: { ...s.targetSize, kb } })),
+  setFilenameTemplate: (filenameTemplate) => set({ filenameTemplate }),
 
   setBgRemovalEnabled: (v) => set((s) => ({ bgRemoval: { ...s.bgRemoval, enabled: v } })),
   setBgModel: (model) => set((s) => ({ bgRemoval: { ...s.bgRemoval, model } })),

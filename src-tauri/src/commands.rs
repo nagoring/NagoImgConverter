@@ -29,6 +29,7 @@ pub struct ConvertRequest {
     pub target_size_kb: Option<u32>,
     pub bg_removal: bool,
     pub bg_model: String,
+    pub filename_template: String,
 }
 
 /// Progress events emitted from Rust to the React frontend.
@@ -91,6 +92,7 @@ pub fn convert_images(app: AppHandle, request: ConvertRequest) -> Result<(), Con
     let options = Arc::new(request.options);
     let resize = Arc::new(request.resize);
     let target_size_bytes = request.target_size_kb.map(|kb| kb as u64 * 1024);
+    let filename_template = Arc::new(request.filename_template.clone());
 
     // Load the AI background removal model once (may trigger a first-time download).
     let bg_remover: Arc<Option<Arc<BgRemover>>> = Arc::new(if request.bg_removal {
@@ -112,6 +114,7 @@ pub fn convert_images(app: AppHandle, request: ConvertRequest) -> Result<(), Con
                 let options = Arc::clone(&options);
                 let resize = Arc::clone(&resize);
                 let bg_remover = Arc::clone(&bg_remover);
+                let filename_template = Arc::clone(&filename_template);
                 let file_path = file_path.clone();
 
                 s.spawn(move || {
@@ -120,6 +123,7 @@ pub fn convert_images(app: AppHandle, request: ConvertRequest) -> Result<(), Con
                         &input,
                         &output_dir,
                         options.extension(),
+                        &filename_template,
                     );
 
                     let _ = app.emit("progress", ProgressEvent::Started { path: file_path.clone() });

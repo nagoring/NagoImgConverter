@@ -8,6 +8,7 @@ import { MetadataToggle } from "./components/Settings/MetadataToggle";
 import { PngOptimizeToggle } from "./components/Settings/PngOptimizeToggle";
 import { ResizePanel } from "./components/Settings/ResizePanel";
 import { TargetSizeInput } from "./components/Settings/TargetSizeInput";
+import { FilenameTemplate } from "./components/Settings/FilenameTemplate";
 import { BgRemovalPanel } from "./components/Settings/BgRemovalPanel";
 import { ConvertButton } from "./components/ConvertButton";
 import { ProgressBar } from "./components/ProgressBar";
@@ -51,6 +52,8 @@ export function App() {
           <BgRemovalPanel />
           <hr className="border-gray-100" />
           <ResizePanel />
+          <hr className="border-gray-100" />
+          <FilenameTemplate />
           <hr className="border-gray-100" />
           <OutputFolderPicker />
           <hr className="border-gray-100" />

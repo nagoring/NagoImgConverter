@@ -1,29 +1,36 @@
 use std::path::{Path, PathBuf};
 
+/// Apply a filename template, substituting `{name}` with the input stem.
+/// Falls back to `{name}` if the template is empty.
+pub fn apply_template(template: &str, stem: &str) -> String {
+    let t = if template.trim().is_empty() { "{name}" } else { template.trim() };
+    t.replace("{name}", stem)
+}
+
 /// Resolve a collision-free output path for a converted file.
 ///
-/// Priority:
-///   1. `stem.ext`            — use as-is if it doesn't exist
-///   2. `stem_converted.ext`  — first collision fallback
-///   3. `stem_converted_2.ext`, `_3`, ... — incrementing suffix
-pub fn resolve_output_path(input_path: &Path, output_dir: &Path, new_ext: &str) -> PathBuf {
+/// The base name comes from `apply_template(template, stem)`.
+/// Collisions are resolved by appending `_2`, `_3`, ... to the base name.
+pub fn resolve_output_path(
+    input_path: &Path,
+    output_dir: &Path,
+    new_ext: &str,
+    template: &str,
+) -> PathBuf {
     let stem = input_path
         .file_stem()
         .and_then(|s| s.to_str())
         .unwrap_or("output");
 
-    let candidate = output_dir.join(format!("{stem}.{new_ext}"));
+    let base = apply_template(template, stem);
+
+    let candidate = output_dir.join(format!("{base}.{new_ext}"));
     if !candidate.exists() {
         return candidate;
     }
 
-    let converted = output_dir.join(format!("{stem}_converted.{new_ext}"));
-    if !converted.exists() {
-        return converted;
-    }
-
     for n in 2u32.. {
-        let numbered = output_dir.join(format!("{stem}_converted_{n}.{new_ext}"));
+        let numbered = output_dir.join(format!("{base}_{n}.{new_ext}"));
         if !numbered.exists() {
             return numbered;
         }

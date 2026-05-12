@@ -133,18 +133,27 @@ mod tests {
         let input = dir.path().join("photo.png");
         std::fs::write(&input, b"").unwrap();
 
-        let p1 = resolve_output_path(&input, dir.path(), "jpg");
+        let p1 = resolve_output_path(&input, dir.path(), "jpg", "{name}");
         assert_eq!(p1.file_name().unwrap(), "photo.jpg");
 
-        // 1回目のファイルを作成してから再度解決
         std::fs::write(&p1, b"").unwrap();
-        let p2 = resolve_output_path(&input, dir.path(), "jpg");
-        assert_eq!(p2.file_name().unwrap(), "photo_converted.jpg");
+        let p2 = resolve_output_path(&input, dir.path(), "jpg", "{name}");
+        assert_eq!(p2.file_name().unwrap(), "photo_2.jpg");
 
-        // 2回目も作成
         std::fs::write(&p2, b"").unwrap();
-        let p3 = resolve_output_path(&input, dir.path(), "jpg");
-        assert_eq!(p3.file_name().unwrap(), "photo_converted_2.jpg");
+        let p3 = resolve_output_path(&input, dir.path(), "jpg", "{name}");
+        assert_eq!(p3.file_name().unwrap(), "photo_3.jpg");
+    }
+
+    #[test]
+    fn filename_template_applied() {
+        use crate::fs_utils::resolve_output_path;
+        let dir = tempdir().unwrap();
+        let input = dir.path().join("photo.png");
+        std::fs::write(&input, b"").unwrap();
+
+        let p = resolve_output_path(&input, dir.path(), "ico", "{name}_icon");
+        assert_eq!(p.file_name().unwrap(), "photo_icon.ico");
     }
 
     #[test]

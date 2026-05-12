@@ -37,6 +37,7 @@ export interface ConvertRequest {
   targetSizeKb?: number;
   bgRemoval: boolean;
   bgModel: string;
+  filenameTemplate: string;
 }
 
 export function buildResizeParams(s: ResizeSettings): RustResizeParams | undefined {
