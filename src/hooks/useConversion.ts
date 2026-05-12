@@ -70,7 +70,7 @@ export function useConversion() {
       files: store.files.map((f) => f.path),
       outputDir: store.outputDir,
       options,
-      preserveMetadata: false,
+      preserveMetadata: store.preserveMetadata,
       resize: buildResizeParams(store.resizeSettings),
       targetSizeKb: store.targetSize.enabled ? store.targetSize.kb : undefined,
       bgRemoval: store.bgRemoval.enabled,

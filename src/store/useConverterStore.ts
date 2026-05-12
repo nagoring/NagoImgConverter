@@ -44,6 +44,8 @@ interface ConverterState {
   filenameSuffix: string;
   setFilenamePrefix: (v: string) => void;
   setFilenameSuffix: (v: string) => void;
+  preserveMetadata: boolean;
+  setPreserveMetadata: (v: boolean) => void;
   setBgRemovalEnabled: (v: boolean) => void;
   setBgModel: (model: BgModel) => void;
   setBgModelStatus: (s: string) => void;
@@ -65,6 +67,7 @@ export const useConverterStore = create<ConverterState>((set) => ({
   targetSize: { enabled: false, kb: 500 },
   filenamePrefix: "",
   filenameSuffix: "",
+  preserveMetadata: false,
   bgRemoval: { enabled: false, model: "general" as BgModel },
   bgModelStatus: "",
   resizeSettings: {
@@ -117,6 +120,7 @@ export const useConverterStore = create<ConverterState>((set) => ({
   setFilenamePrefix: (filenamePrefix) => set({ filenamePrefix }),
   setFilenameSuffix: (filenameSuffix) => set({ filenameSuffix }),
 
+  setPreserveMetadata: (preserveMetadata) => set({ preserveMetadata }),
   setBgRemovalEnabled: (v) => set((s) => ({ bgRemoval: { ...s.bgRemoval, enabled: v } })),
   setBgModel: (model) => set((s) => ({ bgRemoval: { ...s.bgRemoval, model } })),
   setBgModelStatus: (bgModelStatus) => set({ bgModelStatus }),

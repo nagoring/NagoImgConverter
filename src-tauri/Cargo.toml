@@ -32,6 +32,8 @@ rgb          = "0.8"
 
 oxipng       = "10"
 ico          = "0.3"
+img-parts    = "0.3"
+bytes        = "1"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 libheif-rs = "1"

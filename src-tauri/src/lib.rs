@@ -2,6 +2,7 @@ mod bg_removal;
 mod commands;
 mod converter;
 mod error;
+mod exif_utils;
 mod fs_utils;
 
 pub fn run() {

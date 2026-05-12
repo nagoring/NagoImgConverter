@@ -151,6 +151,12 @@ pub fn convert_images(app: AppHandle, request: ConvertRequest) -> Result<(), Con
                         }
                         Some(converter) => match converter.convert(&params) {
                             Ok(_) => {
+                                if request.preserve_metadata {
+                                    let _ = crate::exif_utils::copy_exif(
+                                        &params.input_path,
+                                        &params.output_path,
+                                    );
+                                }
                                 let _ = app.emit(
                                     "progress",
                                     ProgressEvent::Completed {
