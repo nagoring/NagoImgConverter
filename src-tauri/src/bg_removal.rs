@@ -4,7 +4,7 @@ use ndarray::Array4;
 use ort::session::{builder::GraphOptimizationLevel, Session};
 use ort::value::Tensor as OrtTensor;
 use std::io::Read;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use tauri::{AppHandle, Emitter};
 
@@ -82,10 +82,15 @@ impl BgRemover {
     }
 
     /// Load (and download if missing) the ONNX model.
+    /// Models are stored in a `models/` folder next to the executable.
     /// Emits "bg_model_status" events so the UI can show progress.
-    pub fn load(app: &AppHandle, app_data_dir: &Path, model: BgModel) -> Result<Self, ConvertError> {
+    pub fn load(app: &AppHandle, model: BgModel) -> Result<Self, ConvertError> {
+        let exe_dir = std::env::current_exe()
+            .map_err(|e| ConvertError::Encode(e.to_string()))?;
+        let exe_dir = exe_dir.parent()
+            .ok_or_else(|| ConvertError::Encode("実行ファイルのディレクトリを取得できませんでした".into()))?;
         let spec = model.spec();
-        let path = app_data_dir.join("models").join(spec.file);
+        let path = exe_dir.join("models").join(spec.file);
         if !path.exists() {
             let _ = app.emit("bg_model_status", spec.download_msg);
             download_model(&path, spec.url)?;

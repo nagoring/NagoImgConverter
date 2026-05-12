@@ -94,11 +94,7 @@ pub fn convert_images(app: AppHandle, request: ConvertRequest) -> Result<(), Con
 
     // Load the AI background removal model once (may trigger a first-time download).
     let bg_remover: Arc<Option<Arc<BgRemover>>> = Arc::new(if request.bg_removal {
-        let data_dir = app
-            .path()
-            .app_data_dir()
-            .map_err(|e| ConvertError::Encode(e.to_string()))?;
-        Some(Arc::new(BgRemover::load(&app, &data_dir, BgModel::from_str(&request.bg_model))?))
+        Some(Arc::new(BgRemover::load(&app, BgModel::from_str(&request.bg_model))?))
     } else {
         None
     });
