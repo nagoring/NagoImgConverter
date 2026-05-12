@@ -13,4 +13,7 @@ export const IMAGE_EXTENSIONS = new Set([
   "bmp",
   "tif",
   "tiff",
+  "avif",
+  "heic",
+  "heif",
 ]);

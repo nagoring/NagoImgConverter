@@ -17,7 +17,7 @@ impl ImageConverter for IcoConverter {
     }
 
     fn convert(&self, params: &ConvertParams) -> Result<(), ConvertError> {
-        let img = image::open(&params.input_path)?;
+        let img = super::open_image(&params.input_path)?;
         // resize is intentionally skipped: ICO always embeds all standard sizes
 
         let mut icon_dir = IconDir::new(ResourceType::Icon);

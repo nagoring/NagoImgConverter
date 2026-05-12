@@ -19,7 +19,7 @@ impl ImageConverter for WebPConverter {
             _ => None,
         };
 
-        let img = image::open(&params.input_path)?;
+        let img = super::open_image(&params.input_path)?;
         let img = maybe_resize(img, &params.resize);
         let img = match &params.bg_remover {
             Some(r) => r.remove(&img)?,

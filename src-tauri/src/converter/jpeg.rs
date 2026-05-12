@@ -28,7 +28,7 @@ impl ImageConverter for JpegConverter {
             _ => 85,
         };
 
-        let img = image::open(&params.input_path)?;
+        let img = super::open_image(&params.input_path)?;
         let img = maybe_resize(img, &params.resize);
 
         let data = if let Some(target) = params.target_size_bytes {

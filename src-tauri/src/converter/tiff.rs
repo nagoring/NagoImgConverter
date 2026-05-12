@@ -14,7 +14,7 @@ impl ImageConverter for TiffConverter {
     }
 
     fn convert(&self, params: &ConvertParams) -> Result<(), ConvertError> {
-        let img = image::open(&params.input_path)?;
+        let img = super::open_image(&params.input_path)?;
         let img = maybe_resize(img, &params.resize);
         img.save_with_format(&params.output_path, ImageFormat::Tiff)?;
         Ok(())
