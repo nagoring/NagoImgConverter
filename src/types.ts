@@ -24,8 +24,11 @@ export interface TargetSizeSettings {
   kb: number;
 }
 
+export type BgModel = "general" | "anime";
+
 export interface BgRemovalSettings {
   enabled: boolean;
+  model: BgModel;
 }
 
 export interface FileEntry {

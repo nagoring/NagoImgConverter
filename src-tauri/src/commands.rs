@@ -1,4 +1,4 @@
-use crate::bg_removal::BgRemover;
+use crate::bg_removal::{BgModel, BgRemover};
 use crate::converter::{ConvertParams, ConverterRegistry, FormatOptions, ResizeParams};
 use crate::error::ConvertError;
 use crate::fs_utils;
@@ -28,6 +28,7 @@ pub struct ConvertRequest {
     pub resize: Option<ResizeParams>,
     pub target_size_kb: Option<u32>,
     pub bg_removal: bool,
+    pub bg_model: String,
 }
 
 /// Progress events emitted from Rust to the React frontend.
@@ -97,7 +98,7 @@ pub fn convert_images(app: AppHandle, request: ConvertRequest) -> Result<(), Con
             .path()
             .app_data_dir()
             .map_err(|e| ConvertError::Encode(e.to_string()))?;
-        Some(Arc::new(BgRemover::load(&app, &data_dir)?))
+        Some(Arc::new(BgRemover::load(&app, &data_dir, BgModel::from_str(&request.bg_model))?))
     } else {
         None
     });

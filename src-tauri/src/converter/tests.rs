@@ -184,8 +184,8 @@ mod tests {
             eprintln!("Skipping: model not at /tmp/u2netp_test.onnx");
             return;
         }
-        use crate::bg_removal::BgRemover;
-        let remover = BgRemover::load_from_path(model_path)
+        use crate::bg_removal::{BgModel, BgRemover};
+        let remover = BgRemover::load_from_path(model_path, BgModel::General)
             .expect("BgRemover::load_from_path should succeed");
 
         let img = make_test_image();
