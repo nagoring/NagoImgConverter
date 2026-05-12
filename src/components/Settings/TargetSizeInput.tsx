@@ -8,7 +8,7 @@ export function TargetSizeInput() {
   const isConverting = useConverterStore((s) => s.isConverting);
 
   // PNG (lossless) and GIF/BMP/TIFF don't support quality binary search
-  if (format === "png" || format === "gif" || format === "bmp" || format === "tiff") return null;
+  if (format === "png" || format === "gif" || format === "bmp" || format === "tiff" || format === "ico") return null;
 
   return (
     <div>

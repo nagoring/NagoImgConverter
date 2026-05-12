@@ -16,7 +16,8 @@ export type RustFormatOptions =
   | { format: "gif" }
   | { format: "bmp" }
   | { format: "tiff" }
-  | { format: "avif"; quality: number };
+  | { format: "avif"; quality: number }
+  | { format: "ico" };
 
 export interface RustResizeParams {
   mode: "widthHeight" | "longSide" | "percent";
@@ -81,5 +82,7 @@ export function buildRustOptions(
       return { format: "tiff" };
     case "avif":
       return { format: "avif", quality: quality ?? 80 };
+    case "ico":
+      return { format: "ico" };
   }
 }

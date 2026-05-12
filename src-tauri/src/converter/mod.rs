@@ -1,6 +1,7 @@
 pub mod avif;
 pub mod bmp;
 pub mod gif;
+pub mod ico;
 pub mod jpeg;
 pub mod png;
 pub mod tiff;
@@ -45,6 +46,7 @@ pub enum FormatOptions {
         #[serde(default = "default_avif_quality")]
         quality: f32, // 1-100
     },
+    Ico,
 }
 
 impl FormatOptions {
@@ -57,6 +59,7 @@ impl FormatOptions {
             Self::Bmp => "bmp",
             Self::Tiff => "tiff",
             Self::Avif { .. } => "avif",
+            Self::Ico => "ico",
         }
     }
 }
@@ -191,6 +194,7 @@ impl ConverterRegistry {
                 Box::new(bmp::BmpConverter),
                 Box::new(tiff::TiffConverter),
                 Box::new(avif::AvifConverter),
+                Box::new(ico::IcoConverter),
             ],
         }
     }

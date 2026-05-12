@@ -197,6 +197,18 @@ mod tests {
     }
 
     #[test]
+    fn png_to_ico() {
+        let dir = tempdir().unwrap();
+        let input = save_test_png(&dir.path().to_path_buf());
+        let output = run_conversion(&input, FormatOptions::Ico, &dir.path().to_path_buf());
+        assert!(output.exists(), "ICO output does not exist");
+        // ICO file has a 6-byte header starting with 0x00 0x00 0x01 0x00
+        let bytes = std::fs::read(&output).unwrap();
+        assert!(bytes.len() > 6, "ICO file too small");
+        assert_eq!(&bytes[0..4], &[0x00, 0x00, 0x01, 0x00], "invalid ICO header");
+    }
+
+    #[test]
     fn invalid_file_returns_error() {
         let dir = tempdir().unwrap();
         let bad = dir.path().join("bad.png");
