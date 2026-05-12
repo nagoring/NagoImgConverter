@@ -13,6 +13,7 @@ import { BgRemovalPanel } from "./components/Settings/BgRemovalPanel";
 import { ConvertButton } from "./components/ConvertButton";
 import { ProgressBar } from "./components/ProgressBar";
 import { SummaryReport } from "./components/SummaryReport";
+import { PreviewModal } from "./components/PreviewModal";
 import { useConverterStore } from "./store/useConverterStore";
 
 export function App() {
@@ -66,6 +67,7 @@ export function App() {
 
       {/* Conversion result overlay */}
       <SummaryReport />
+      <PreviewModal />
     </div>
   );
 }
