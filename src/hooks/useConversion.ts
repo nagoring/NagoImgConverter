@@ -75,7 +75,7 @@ export function useConversion() {
       targetSizeKb: store.targetSize.enabled ? store.targetSize.kb : undefined,
       bgRemoval: store.bgRemoval.enabled,
       bgModel: store.bgRemoval.model,
-      filenameTemplate: store.filenameTemplate,
+      filenameTemplate: `${store.filenamePrefix}{name}${store.filenameSuffix}`,
     }).catch((e: unknown) => {
       console.error("convert_images failed:", e);
       // Extract the human-readable message from Tauri's serialised ConvertError enum.
