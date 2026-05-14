@@ -32,7 +32,7 @@ jobs:
         run: npm ci
 
       - name: Build Tauri app (Windows portable)
-        run: npm run tauri build -- --target x86_64-pc-windows-msvc --bundles none
+        run: npm run tauri build -- --target x86_64-pc-windows-msvc --bundles nsis
 
       - name: Upload portable exe
         uses: actions/upload-artifact@v4
