@@ -1,3 +1,4 @@
+#[cfg(target_os = "macos")]
 use crate::bg_removal::{BgModel, BgRemover};
 use crate::converter::{ConvertParams, ConverterRegistry, FormatOptions, ResizeParams};
 use crate::error::ConvertError;
@@ -95,6 +96,7 @@ pub fn convert_images(app: AppHandle, request: ConvertRequest) -> Result<(), Con
     let filename_template = Arc::new(request.filename_template.clone());
 
     // Load the AI background removal model once (may trigger a first-time download).
+    #[cfg(target_os = "macos")]
     let bg_remover: Arc<Option<Arc<BgRemover>>> = Arc::new(if request.bg_removal {
         Some(Arc::new(BgRemover::load(&app, BgModel::from_str(&request.bg_model))?))
     } else {
@@ -113,6 +115,7 @@ pub fn convert_images(app: AppHandle, request: ConvertRequest) -> Result<(), Con
                 let output_dir = Arc::clone(&output_dir);
                 let options = Arc::clone(&options);
                 let resize = Arc::clone(&resize);
+                #[cfg(target_os = "macos")]
                 let bg_remover = Arc::clone(&bg_remover);
                 let filename_template = Arc::clone(&filename_template);
                 let file_path = file_path.clone();
@@ -135,6 +138,7 @@ pub fn convert_images(app: AppHandle, request: ConvertRequest) -> Result<(), Con
                         preserve_metadata: request.preserve_metadata,
                         resize: (*resize).clone(),
                         target_size_bytes,
+                        #[cfg(target_os = "macos")]
                         bg_remover: (*bg_remover).as_ref().map(Arc::clone),
                     };
 

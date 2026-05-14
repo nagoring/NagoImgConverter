@@ -34,11 +34,11 @@ oxipng       = "10"
 ico          = "0.3"
 img-parts    = "0.3"
 bytes        = "1"
+thiserror    = "2"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 libheif-rs = "1"
 rayon        = "1"
-thiserror    = "2"
 log          = "0.4"
 ort          = { version = "2.0.0-rc.12", features = ["download-binaries", "ndarray"] }
 ndarray      = "0.17"

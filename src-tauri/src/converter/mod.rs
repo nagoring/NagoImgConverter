@@ -9,6 +9,7 @@ pub mod tiff;
 pub mod webp;
 mod tests;
 
+#[cfg(target_os = "macos")]
 use crate::bg_removal::BgRemover;
 use crate::error::ConvertError;
 use image::{imageops::FilterType, DynamicImage};
@@ -142,6 +143,7 @@ pub struct ConvertParams {
     pub preserve_metadata: bool,
     pub resize: Option<ResizeParams>,
     pub target_size_bytes: Option<u64>,
+    #[cfg(target_os = "macos")]
     pub bg_remover: Option<Arc<BgRemover>>,
 }
 

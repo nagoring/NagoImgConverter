@@ -37,6 +37,7 @@ mod tests {
             preserve_metadata: false,
             resize: None,
             target_size_bytes: None,
+            #[cfg(target_os = "macos")]
             bg_remover: None,
         };
         let converter = registry.find(&params.options).expect("converter not found");
@@ -186,6 +187,7 @@ mod tests {
         );
     }
 
+    #[cfg(target_os = "macos")]
     #[test]
     fn bg_remover_loads_and_runs() {
         let model_path = std::path::Path::new("/tmp/u2netp_test.onnx");
@@ -230,6 +232,7 @@ mod tests {
             preserve_metadata: false,
             resize: None,
             target_size_bytes: None,
+            #[cfg(target_os = "macos")]
             bg_remover: None,
         };
         let converter = registry.find(&params.options).unwrap();

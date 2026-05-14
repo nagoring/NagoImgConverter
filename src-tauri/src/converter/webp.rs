@@ -21,6 +21,7 @@ impl ImageConverter for WebPConverter {
 
         let img = super::open_image(&params.input_path)?;
         let img = maybe_resize(img, &params.resize);
+        #[cfg(target_os = "macos")]
         let img = match &params.bg_remover {
             Some(r) => r.remove(&img)?,
             None => img,
