@@ -31,19 +31,13 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Build Tauri app (Windows)
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          args: --target x86_64-pc-windows-msvc
+      - name: Build Tauri app (Windows portable)
+        run: npm run tauri build -- --target x86_64-pc-windows-msvc --bundles none
 
-      - name: Upload installer artifacts
+      - name: Upload portable exe
         uses: actions/upload-artifact@v4
         with:
-          name: windows-installer
-          path: |
-            src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/*.msi
-            src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
+          name: NagoImgConverter-windows-portable
+          path: src-tauri/target/x86_64-pc-windows-msvc/release/nago-img-converter.exe
           if-no-files-found: error
           retention-days: 14
