@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { readFile } from "@tauri-apps/plugin-fs";
+import { useEffect, useRef, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import { useConverterStore } from "../store/useConverterStore";
 import { formatBytes } from "../lib/format";
 
@@ -24,32 +24,54 @@ function extOf(path: string): string {
 function useBlobUrl(path: string | null | undefined, ext: string) {
   const [url, setUrl] = useState<string | null>(null);
   const [size, setSize] = useState<number>(0);
+  const [error, setError] = useState<string | null>(null);
+  const urlRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!path) { setUrl(null); setSize(0); return; }
-    let revoke: (() => void) | undefined;
-    readFile(path).then((bytes) => {
+    if (!path) {
+      if (urlRef.current) { URL.revokeObjectURL(urlRef.current); urlRef.current = null; }
+      setUrl(null); setSize(0); setError(null);
+      return;
+    }
+    setError(null);
+    let cancelled = false;
+    invoke<number[]>("read_file_for_preview", { path }).then((arr) => {
+      if (cancelled) return;
+      if (urlRef.current) URL.revokeObjectURL(urlRef.current);
+      const bytes = new Uint8Array(arr);
       setSize(bytes.length);
       const blob = new Blob([bytes], { type: mimeType(ext) });
       const newUrl = URL.createObjectURL(blob);
-      setUrl((prev) => { if (prev) URL.revokeObjectURL(prev); return newUrl; });
-      revoke = () => URL.revokeObjectURL(newUrl);
+      urlRef.current = newUrl;
+      setUrl(newUrl);
+    }).catch((e) => {
+      if (!cancelled) setError(String(e));
     });
-    return () => revoke?.();
+    return () => { cancelled = true; };
   }, [path]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return { url, size };
+  useEffect(() => {
+    return () => { if (urlRef.current) URL.revokeObjectURL(urlRef.current); };
+  }, []);
+
+  return { url, size, error };
 }
 
 export function PreviewModal() {
-  const file = useConverterStore((s) => s.previewFile);
+  // Always use live data from files[] so outputPath is visible after conversion completes.
+  const file = useConverterStore((s) => {
+    const pf = s.previewFile;
+    if (!pf) return null;
+    return s.files.find((f) => f.path === pf.path) ?? pf;
+  });
   const close = useConverterStore((s) => s.setPreviewFile);
 
   const { url: beforeUrl } = useBlobUrl(file?.path, file?.extension ?? "");
   const outputPath = file?.status === "success" ? file.outputPath : undefined;
-  const { url: afterUrl, size: afterSize } = useBlobUrl(outputPath, extOf(outputPath ?? ""));
+  const { url: afterUrl, size: afterSize, error: afterError } = useBlobUrl(outputPath, extOf(outputPath ?? ""));
 
-  const isComparison = !!(afterUrl && beforeUrl);
+  const showAfter = file?.status === "success";
+  const isComparison = !!(showAfter && beforeUrl);
   const sizeDiff = afterSize && file?.size
     ? Math.round((afterSize / file.size - 1) * 100)
     : null;
@@ -101,19 +123,24 @@ export function PreviewModal() {
           </div>
 
           {/* After */}
-          {isComparison && (
+          {showAfter && (
             <>
               <div className="w-px bg-gray-200 self-stretch shrink-0" />
               <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
                 <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide flex items-center gap-1.5">
-                  変換後 · {formatBytes(afterSize)}
+                  変換後{afterSize > 0 ? ` · ${formatBytes(afterSize)}` : ""}
                   {sizeDiff !== null && (
                     <span className={`${sizeDiff < 0 ? "text-green-600" : "text-orange-500"}`}>
                       ({sizeDiff > 0 ? "+" : ""}{sizeDiff}%)
                     </span>
                   )}
                 </span>
-                <img src={afterUrl} alt="変換後" className="max-w-full max-h-[75vh] object-contain rounded border border-gray-200" />
+                {afterUrl
+                  ? <img src={afterUrl} alt="変換後" className="max-w-full max-h-[75vh] object-contain rounded border border-gray-200" />
+                  : afterError
+                    ? <p className="text-sm text-red-500 max-w-xs break-all">読み込みエラー: {afterError}</p>
+                    : <p className="text-sm text-gray-400">読み込み中…</p>
+                }
               </div>
             </>
           )}

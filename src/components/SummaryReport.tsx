@@ -5,15 +5,31 @@ export function SummaryReport() {
   const files = useConverterStore((s) => s.files);
   const clearFiles = useConverterStore((s) => s.clearFiles);
   const resetForNewConversion = useConverterStore((s) => s.resetForNewConversion);
+  const setSummary = useConverterStore((s) => s.setSummary);
 
   if (!summary) return null;
 
   const failedFiles = files.filter((f) => f.status === "failed");
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
-        <h2 className="text-lg font-bold text-gray-900">変換完了</h2>
+    <div
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+      onClick={() => setSummary(null)}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-gray-900">変換完了</h2>
+          <button
+            onClick={() => setSummary(null)}
+            className="text-gray-400 hover:text-gray-700 text-lg leading-none"
+            title="閉じる（ファイルはそのまま）"
+          >
+            ✕
+          </button>
+        </div>
 
         <div className="flex gap-4">
           <div className="flex-1 bg-green-50 rounded-xl p-3 text-center">

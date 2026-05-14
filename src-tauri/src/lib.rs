@@ -13,6 +13,8 @@ pub fn run() {
             commands::get_file_info,
             commands::validate_output_dir,
             commands::convert_images,
+            commands::read_file_for_preview,
+            commands::write_log,
         ])
         .run(tauri::generate_context!())
         .expect("error while running application");

@@ -37,7 +37,7 @@ pub struct ConvertRequest {
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum ProgressEvent {
     Started { path: String },
-    Completed { path: String, output_path: String },
+    Completed { path: String, #[serde(rename = "outputPath")] output_path: String },
     Failed { path: String, error: String },
     AllDone { total: usize, succeeded: usize, failed: usize },
 }
@@ -190,4 +190,28 @@ pub fn convert_images(app: AppHandle, request: ConvertRequest) -> Result<(), Con
     let _ = app.emit("progress", ProgressEvent::AllDone { total, succeeded, failed });
 
     Ok(())
+}
+
+/// Read any file as raw bytes for preview purposes, bypassing the fs-plugin scope.
+#[tauri::command]
+pub fn read_file_for_preview(path: String) -> Result<Vec<u8>, String> {
+    std::fs::read(&path).map_err(|e| e.to_string())
+}
+
+/// Append a log line to <project>/logs/debug.log for frontend debugging.
+#[tauri::command]
+pub fn write_log(message: String) {
+    // current_exe() is <project>/src-tauri/target/debug/<bin>
+    // go up 3 levels to reach the project root
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(project_root) = exe.parent().and_then(|p| p.parent()).and_then(|p| p.parent()).and_then(|p| p.parent()) {
+            let log_dir = project_root.join("logs");
+            let _ = std::fs::create_dir_all(&log_dir);
+            let log_path = log_dir.join("debug.log");
+            use std::io::Write;
+            if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(&log_path) {
+                let _ = writeln!(f, "{}", message);
+            }
+        }
+    }
 }

@@ -8,6 +8,10 @@
     "core:event:default",
     "dialog:allow-open",
     "fs:read-all",
-    "fs:write-all"
+    "fs:write-all",
+    {
+      "identifier": "fs:scope",
+      "allow": ["$HOME/**", "/Volumes/**", "/tmp/**"]
+    }
   ]
 }
