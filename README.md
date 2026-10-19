@@ -23,6 +23,17 @@
 - 同名ファイルがある場合は `_converted` サフィックスで保存
 - 並列変換で大量ファイルも高速処理
 
+## ダウンロード
+
+| OS | ファイル |
+|---|---|
+| Windows (x64) | [nago-img-converter.exe](https://github.com/nagoring/NagoImgConverter/releases/latest/download/nago-img-converter.exe)（インストール不要） |
+| macOS (Apple Silicon) | [NagoImgConverter_macos_aarch64.dmg](https://github.com/nagoring/NagoImgConverter/releases/latest/download/NagoImgConverter_macos_aarch64.dmg) |
+
+過去のバージョンは [Releases](https://github.com/nagoring/NagoImgConverter/releases) から。
+
+> macOS 版は未署名のため、初回は `.app` を右クリック →「開く」で起動してください。
+
 ## 起動方法
 
 ```bash
