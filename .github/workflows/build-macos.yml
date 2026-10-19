@@ -1,0 +1,79 @@
+name: Build macOS
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    # Apple Silicon (arm64) runner
+    runs-on: macos-latest
+
+    env:
+      APP_PATH: src-tauri/target/release/bundle/macos/NagoImgConverter.app
+      DMG_PATH: src-tauri/target/release/bundle/NagoImgConverter_macos_aarch64.dmg
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin
+
+      - name: Cache Rust
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      # libheif-rs (HEIC support) links against Homebrew's libheif
+      - name: Install native dependencies
+        run: brew install libheif pkg-config dylibbundler
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build Tauri app (.app)
+        run: npm run tauri build -- --bundles app
+
+      # Copy Homebrew dylibs (libheif and its deps) into the .app so it runs
+      # on machines without Homebrew, then re-sign ad-hoc.
+      - name: Bundle dynamic libraries
+        run: |
+          dylibbundler -od -b \
+            -x "$APP_PATH/Contents/MacOS/nago-img-converter" \
+            -d "$APP_PATH/Contents/Frameworks/" \
+            -p @executable_path/../Frameworks/
+          codesign --force --deep --sign - "$APP_PATH"
+          otool -L "$APP_PATH/Contents/MacOS/nago-img-converter"
+
+      - name: Create DMG
+        run: |
+          STAGING="$(mktemp -d)"
+          cp -R "$APP_PATH" "$STAGING/"
+          ln -s /Applications "$STAGING/Applications"
+          hdiutil create -volname NagoImgConverter -srcfolder "$STAGING" \
+            -ov -format UDZO "$DMG_PATH"
+
+      - name: Upload artifact (branch builds)
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: NagoImgConverter-macos-aarch64
+          path: ${{ env.DMG_PATH }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload to GitHub Release (tag builds)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.DMG_PATH }}
