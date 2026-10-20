@@ -1,10 +1,12 @@
 import { useConverterStore } from "../../store/useConverterStore";
 import { useFileDialog } from "../../hooks/useFileDialog";
+import { useT } from "../../i18n";
 
 export function OutputFolderPicker() {
   const outputDir = useConverterStore((s) => s.outputDir);
   const isConverting = useConverterStore((s) => s.isConverting);
   const { pickOutputFolder } = useFileDialog();
+  const t = useT();
 
   const displayPath = outputDir
     ? outputDir.split("/").slice(-2).join("/")
@@ -13,7 +15,7 @@ export function OutputFolderPicker() {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-2">
-        出力先フォルダ
+        {t("output.label")}
       </label>
       <button
         onClick={pickOutputFolder}
@@ -22,7 +24,7 @@ export function OutputFolderPicker() {
       >
         <span className="text-lg">📁</span>
         <span className={`flex-1 truncate ${outputDir ? "text-gray-900" : "text-gray-400"}`}>
-          {displayPath || "フォルダを選択…"}
+          {displayPath || t("output.pick")}
         </span>
       </button>
       {outputDir && (

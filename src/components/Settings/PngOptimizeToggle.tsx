@@ -1,18 +1,20 @@
 import { useConverterStore } from "../../store/useConverterStore";
+import { useT } from "../../i18n";
 
 export function PngOptimizeToggle() {
   const format = useConverterStore((s) => s.formatOptions.format);
   const pngOptimize = useConverterStore((s) => s.formatOptions.pngOptimize ?? false);
   const setPngOptimize = useConverterStore((s) => s.setPngOptimize);
   const isConverting = useConverterStore((s) => s.isConverting);
+  const t = useT();
 
   if (format !== "png") return null;
 
   return (
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-sm font-medium text-gray-700">PNG最適化</p>
-        <p className="text-xs text-gray-400">再圧縮 + メタデータ除去（20〜50% 削減）</p>
+        <p className="text-sm font-medium text-gray-700">{t("pngOptimize.label")}</p>
+        <p className="text-xs text-gray-400">{t("pngOptimize.hint")}</p>
       </div>
       <button
         role="switch"

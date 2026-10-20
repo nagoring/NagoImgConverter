@@ -1,4 +1,5 @@
 import { useConverterStore } from "../../store/useConverterStore";
+import { useT } from "../../i18n";
 
 export function FilenameTemplate() {
   const prefix = useConverterStore((s) => s.filenamePrefix);
@@ -8,6 +9,7 @@ export function FilenameTemplate() {
   const isConverting = useConverterStore((s) => s.isConverting);
   const files = useConverterStore((s) => s.files);
   const format = useConverterStore((s) => s.formatOptions.format);
+  const t = useT();
 
   const exampleStem = files[0]
     ? files[0].name.replace(/\.[^.]+$/, "")
@@ -20,7 +22,7 @@ export function FilenameTemplate() {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-2">
-        出力ファイル名
+        {t("filename.label")}
       </label>
       <div className="flex items-center gap-1">
         <input

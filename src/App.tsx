@@ -14,6 +14,7 @@ import { ConvertButton } from "./components/ConvertButton";
 import { ProgressBar } from "./components/ProgressBar";
 import { SummaryReport } from "./components/SummaryReport";
 import { PreviewModal } from "./components/PreviewModal";
+import { LanguageSelector } from "./components/LanguageSelector";
 import { useConverterStore } from "./store/useConverterStore";
 
 export function App() {
@@ -29,6 +30,9 @@ export function App() {
         <h1 className="text-base font-semibold text-gray-900">
           Nago Image Converter
         </h1>
+        <div className="ml-auto">
+          <LanguageSelector />
+        </div>
       </header>
 
       {/* Main */}

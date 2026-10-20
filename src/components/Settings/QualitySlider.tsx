@@ -1,22 +1,24 @@
 import { useConverterStore } from "../../store/useConverterStore";
+import { useT } from "../../i18n";
 
 export function QualitySlider() {
   const format = useConverterStore((s) => s.formatOptions.format);
   const quality = useConverterStore((s) => s.formatOptions.quality);
   const setQuality = useConverterStore((s) => s.setQuality);
   const isConverting = useConverterStore((s) => s.isConverting);
+  const t = useT();
 
   if (format !== "jpeg" && format !== "webp" && format !== "avif") return null;
 
   const currentQuality = quality ?? (format === "jpeg" ? 85 : format === "avif" ? 80 : 100);
   const isWebP = format === "webp";
-  const losslessLabel = isWebP && currentQuality >= 100 ? "（可逆）" : "";
+  const losslessLabel = isWebP && currentQuality >= 100 ? t("quality.lossless") : "";
 
   return (
     <div>
       <label className="flex justify-between text-sm font-medium text-gray-700 mb-2">
         <span>
-          品質{losslessLabel}
+          {t("quality.label")}{losslessLabel}
         </span>
         <span className="text-blue-600 font-semibold">
           {currentQuality}{isWebP ? "" : "%"}
@@ -34,17 +36,17 @@ export function QualitySlider() {
       />
       {isWebP && (
         <p className="text-xs text-gray-400 mt-1">
-          100 = 可逆（lossless）/ 1-99 = 非可逆（lossy）
+          {t("quality.webpHint")}
         </p>
       )}
       {format === "jpeg" && (
         <p className="text-xs text-gray-400 mt-1">
-          ※ JPEG は透過情報を保持できません（白背景に合成されます）
+          {t("quality.jpegHint")}
         </p>
       )}
       {format === "avif" && (
         <p className="text-xs text-gray-400 mt-1">
-          高品質・高圧縮。透過（アルファ）に対応
+          {t("quality.avifHint")}
         </p>
       )}
     </div>

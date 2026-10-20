@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { convertImages, buildRustOptions, buildResizeParams } from "../lib/tauri";
 import { useConverterStore } from "../store/useConverterStore";
+import { translate } from "../i18n";
 import type { ProgressEventPayload, OutputFormat } from "../types";
 
 export function useConversion() {
@@ -53,7 +54,7 @@ export function useConversion() {
   const startConversion = useCallback(async () => {
     if (store.isConverting || store.files.length === 0) return;
     if (!store.outputDir) {
-      alert("出力先フォルダを選択してください。");
+      alert(translate("convert.noOutputDir"));
       return;
     }
 
@@ -84,7 +85,7 @@ export function useConversion() {
           ? (Object.values(e as Record<string, unknown>)[0] as string) ??
             JSON.stringify(e)
           : String(e);
-      alert(`変換に失敗しました:\n${msg}`);
+      alert(translate("convert.failed", { msg }));
       // Mark any still-pending files as failed so the UI doesn't freeze.
       store.files.forEach((f) => {
         if (f.status === "pending" || f.status === "converting") {

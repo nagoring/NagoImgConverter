@@ -1,11 +1,13 @@
 import { useConverterStore } from "../store/useConverterStore";
 import { useConversion } from "../hooks/useConversion";
+import { useT } from "../i18n";
 
 export function ConvertButton() {
   const files = useConverterStore((s) => s.files);
   const outputDir = useConverterStore((s) => s.outputDir);
   const isConverting = useConverterStore((s) => s.isConverting);
   const { startConversion } = useConversion();
+  const t = useT();
 
   const canConvert = files.length > 0 && !!outputDir && !isConverting;
 
@@ -24,10 +26,10 @@ export function ConvertButton() {
       {isConverting ? (
         <>
           <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          変換中…
+          {t("convert.running")}
         </>
       ) : (
-        `変換開始（${files.length} ファイル）`
+        t("convert.start", { n: files.length })
       )}
     </button>
   );

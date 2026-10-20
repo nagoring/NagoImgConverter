@@ -14,21 +14,22 @@ struct ModelSpec {
     url: &'static str,
     file: &'static str,
     size: usize,
-    download_msg: &'static str,
+    /// Status code emitted while downloading; the UI translates it.
+    download_status: &'static str,
 }
 
 const GENERAL: ModelSpec = ModelSpec {
     url: "https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2netp.onnx",
     file: "u2netp.onnx",
     size: 320,
-    download_msg: "AIモデルをダウンロード中…（約5MB）",
+    download_status: "downloading_general",
 };
 
 const ANIME: ModelSpec = ModelSpec {
     url: "https://github.com/danielgatis/rembg/releases/download/v0.0.0/isnet-anime.onnx",
     file: "isnet-anime.onnx",
     size: 1024,
-    download_msg: "AIモデルをダウンロード中…（約168MB、しばらくお待ちください）",
+    download_status: "downloading_anime",
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -92,11 +93,11 @@ impl BgRemover {
         let spec = model.spec();
         let path = exe_dir.join("models").join(spec.file);
         if !path.exists() {
-            let _ = app.emit("bg_model_status", spec.download_msg);
+            let _ = app.emit("bg_model_status", spec.download_status);
             download_model(&path, spec.url)?;
         }
 
-        let _ = app.emit("bg_model_status", "AIモデルを読み込み中…");
+        let _ = app.emit("bg_model_status", "loading");
         let session = Mutex::new(Self::build_session(&path)?);
         let _ = app.emit("bg_model_status", "");
 
