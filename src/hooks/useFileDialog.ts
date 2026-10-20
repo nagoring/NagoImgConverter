@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { validateOutputDir } from "../lib/tauri";
 import { useConverterStore } from "../store/useConverterStore";
+import { translate } from "../i18n";
 
 export function useFileDialog() {
   const setOutputDir = useConverterStore((s) => s.setOutputDir);
@@ -10,7 +11,7 @@ export function useFileDialog() {
     const selected = await open({
       directory: true,
       multiple: false,
-      title: "出力先フォルダを選択",
+      title: translate("output.dialogTitle"),
     });
 
     if (typeof selected !== "string" || !selected) return;
@@ -19,7 +20,7 @@ export function useFileDialog() {
     if (valid) {
       setOutputDir(selected);
     } else {
-      alert("選択したフォルダへの書き込み権限がありません。別のフォルダを選択してください。");
+      alert(translate("output.notWritable"));
     }
   }, [setOutputDir]);
 

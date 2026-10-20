@@ -1,8 +1,10 @@
 import { useConverterStore } from "../store/useConverterStore";
+import { useT } from "../i18n";
 
 export function ProgressBar() {
   const files = useConverterStore((s) => s.files);
   const isConverting = useConverterStore((s) => s.isConverting);
+  const t = useT();
 
   const done = files.filter(
     (f) => f.status === "success" || f.status === "failed"
@@ -21,7 +23,7 @@ export function ProgressBar() {
           {isConverting && (
             <span className="inline-block w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
           )}
-          {isIndeterminate ? "変換中…" : `${done} / ${total} 完了`}
+          {isIndeterminate ? t("progress.converting") : t("progress.done", { done, total })}
         </span>
         {!isIndeterminate && <span>{pct}%</span>}
       </div>

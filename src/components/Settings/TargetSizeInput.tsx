@@ -1,4 +1,5 @@
 import { useConverterStore } from "../../store/useConverterStore";
+import { useT } from "../../i18n";
 
 export function TargetSizeInput() {
   const format = useConverterStore((s) => s.formatOptions.format);
@@ -6,6 +7,7 @@ export function TargetSizeInput() {
   const setEnabled = useConverterStore((s) => s.setTargetSizeEnabled);
   const setKb = useConverterStore((s) => s.setTargetSizeKb);
   const isConverting = useConverterStore((s) => s.isConverting);
+  const t = useT();
 
   // PNG (lossless) and GIF/BMP/TIFF don't support quality binary search
   if (format === "png" || format === "gif" || format === "bmp" || format === "tiff" || format === "ico") return null;
@@ -20,7 +22,7 @@ export function TargetSizeInput() {
           onChange={(e) => setEnabled(e.target.checked)}
           className="accent-blue-600 disabled:opacity-50"
         />
-        目標ファイルサイズ
+        {t("targetSize.label")}
       </label>
       {enabled && (
         <div className="flex items-center gap-2">
@@ -33,12 +35,12 @@ export function TargetSizeInput() {
             onChange={(e) => setKb(Math.max(1, Number(e.target.value)))}
             className="w-24 border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50"
           />
-          <span className="text-sm text-gray-500">KB 以下</span>
+          <span className="text-sm text-gray-500">{t("targetSize.unit")}</span>
         </div>
       )}
       {enabled && (
         <p className="text-xs text-gray-400 mt-1">
-          品質を自動調整して指定サイズに収めます
+          {t("targetSize.hint")}
         </p>
       )}
     </div>

@@ -1,12 +1,14 @@
 import { useConverterStore } from "../../store/useConverterStore";
 import { formatBytes } from "../../lib/format";
 import { StatusBadge } from "./StatusBadge";
+import { useT } from "../../i18n";
 import type { FileEntry } from "../../types";
 
 export function FileRow({ file }: { file: FileEntry }) {
   const removeFile = useConverterStore((s) => s.removeFile);
   const setPreviewFile = useConverterStore((s) => s.setPreviewFile);
   const isConverting = useConverterStore((s) => s.isConverting);
+  const t = useT();
 
   return (
     <tr
@@ -36,7 +38,7 @@ export function FileRow({ file }: { file: FileEntry }) {
           onClick={(e) => { e.stopPropagation(); removeFile(file.path); }}
           disabled={isConverting}
           className="text-gray-400 hover:text-red-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          title="削除"
+          title={t("fileList.remove")}
         >
           ✕
         </button>

@@ -1,16 +1,17 @@
 import { useConverterStore } from "../../store/useConverterStore";
 import type { ResizeMode, ResizeFilter } from "../../types";
+import { useT, type MessageKey } from "../../i18n";
 
-const MODES: { value: ResizeMode; label: string }[] = [
-  { value: "longSide", label: "長辺" },
-  { value: "widthHeight", label: "幅×高さ" },
-  { value: "percent", label: "%" },
+const MODES: { value: ResizeMode; label: MessageKey | null }[] = [
+  { value: "longSide", label: "resize.modeLongSide" },
+  { value: "widthHeight", label: "resize.modeWidthHeight" },
+  { value: "percent", label: null },
 ];
 
-const FILTERS: { value: ResizeFilter; label: string }[] = [
-  { value: "lanczos3", label: "Lanczos3（高品質）" },
-  { value: "bilinear", label: "Bilinear（標準）" },
-  { value: "nearest", label: "Nearest（高速）" },
+const FILTERS: { value: ResizeFilter; label: MessageKey }[] = [
+  { value: "lanczos3", label: "resize.filterLanczos" },
+  { value: "bilinear", label: "resize.filterBilinear" },
+  { value: "nearest", label: "resize.filterNearest" },
 ];
 
 export function ResizePanel() {
@@ -23,12 +24,13 @@ export function ResizePanel() {
   const setResizePercent = useConverterStore((s) => s.setResizePercent);
   const setResizeFilter = useConverterStore((s) => s.setResizeFilter);
   const isConverting = useConverterStore((s) => s.isConverting);
+  const t = useT();
 
   return (
     <div>
       {/* Header row */}
       <div className="flex items-center justify-between mb-3">
-        <p className="text-sm font-medium text-gray-700">リサイズ</p>
+        <p className="text-sm font-medium text-gray-700">{t("resize.label")}</p>
         <button
           role="switch"
           aria-checked={r.enabled}
@@ -55,7 +57,7 @@ export function ResizePanel() {
                     : "bg-white border-gray-300 text-gray-600 hover:border-blue-400"
                 }`}
               >
-                {m.label}
+                {m.label ? t(m.label) : "%"}
               </button>
             ))}
           </div>
@@ -86,7 +88,7 @@ export function ResizePanel() {
                 disabled={isConverting}
                 onChange={(e) => setResizeWidth(Number(e.target.value))}
                 className="w-full border border-gray-300 rounded px-2 py-1 text-sm disabled:opacity-50"
-                placeholder="幅"
+                placeholder={t("resize.width")}
               />
               <span className="text-gray-400 text-xs">×</span>
               <input
@@ -97,7 +99,7 @@ export function ResizePanel() {
                 disabled={isConverting}
                 onChange={(e) => setResizeHeight(Number(e.target.value))}
                 className="w-full border border-gray-300 rounded px-2 py-1 text-sm disabled:opacity-50"
-                placeholder="高さ"
+                placeholder={t("resize.height")}
               />
               <span className="text-xs text-gray-500 shrink-0">px</span>
             </div>
@@ -119,7 +121,7 @@ export function ResizePanel() {
           )}
 
           {r.mode === "widthHeight" && (
-            <p className="text-xs text-gray-400">アスペクト比を保ちながら枠内に収めます</p>
+            <p className="text-xs text-gray-400">{t("resize.fitHint")}</p>
           )}
 
           {/* Filter */}
@@ -130,7 +132,7 @@ export function ResizePanel() {
             className="w-full border border-gray-300 rounded px-2 py-1 text-xs text-gray-700 disabled:opacity-50"
           >
             {FILTERS.map((f) => (
-              <option key={f.value} value={f.value}>{f.label}</option>
+              <option key={f.value} value={f.value}>{t(f.label)}</option>
             ))}
           </select>
         </div>

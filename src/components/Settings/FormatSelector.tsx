@@ -1,5 +1,6 @@
 import { useConverterStore } from "../../store/useConverterStore";
 import type { OutputFormat } from "../../types";
+import { useT } from "../../i18n";
 
 const FORMATS: { value: OutputFormat; label: string }[] = [
   { value: "png",  label: "PNG"  },
@@ -16,11 +17,12 @@ export function FormatSelector() {
   const format = useConverterStore((s) => s.formatOptions.format);
   const setFormat = useConverterStore((s) => s.setFormat);
   const isConverting = useConverterStore((s) => s.isConverting);
+  const t = useT();
 
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-2">
-        出力形式
+        {t("format.label")}
       </label>
       <div className="flex flex-wrap gap-2">
         {FORMATS.map((f) => (

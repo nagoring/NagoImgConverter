@@ -1,10 +1,18 @@
 import { useConverterStore } from "../../store/useConverterStore";
 import type { BgModel } from "../../types";
+import { useT, type MessageKey } from "../../i18n";
 
-const MODELS: { value: BgModel; label: string; note: string }[] = [
-  { value: "general", label: "汎用（実写・人物）",       note: "初回約5MB" },
-  { value: "anime",   label: "アニメ・イラスト",          note: "初回約168MB" },
+const MODELS: { value: BgModel; label: MessageKey; note: MessageKey }[] = [
+  { value: "general", label: "bg.modelGeneral", note: "bg.noteGeneral" },
+  { value: "anime",   label: "bg.modelAnime",   note: "bg.noteAnime" },
 ];
+
+// Rust emits status codes on "bg_model_status"; map them to message keys.
+const STATUS_KEYS: Record<string, MessageKey> = {
+  downloading_general: "bg.status.downloading_general",
+  downloading_anime: "bg.status.downloading_anime",
+  loading: "bg.status.loading",
+};
 
 export function BgRemovalPanel() {
   const format = useConverterStore((s) => s.formatOptions.format);
@@ -14,6 +22,7 @@ export function BgRemovalPanel() {
   const setModel = useConverterStore((s) => s.setBgModel);
   const modelStatus = useConverterStore((s) => s.bgModelStatus);
   const isConverting = useConverterStore((s) => s.isConverting);
+  const t = useT();
 
   // Only PNG and WebP support transparency
   if (format !== "png" && format !== "webp") return null;
@@ -28,7 +37,7 @@ export function BgRemovalPanel() {
           onChange={(e) => setEnabled(e.target.checked)}
           className="accent-blue-600 disabled:opacity-50"
         />
-        背景を透過（AI）
+        {t("bg.label")}
       </label>
 
       {enabled && (
@@ -44,12 +53,12 @@ export function BgRemovalPanel() {
                 onChange={() => setModel(m.value)}
                 className="accent-blue-600 disabled:opacity-50"
               />
-              <span>{m.label}</span>
-              <span className="text-gray-400">({m.note})</span>
+              <span>{t(m.label)}</span>
+              <span className="text-gray-400">({t(m.note)})</span>
             </label>
           ))}
           <p className="text-xs text-gray-400 mt-0.5">
-            初回のみダウンロード。以降は即時起動。
+            {t("bg.hint")}
           </p>
         </div>
       )}
@@ -57,7 +66,7 @@ export function BgRemovalPanel() {
       {modelStatus && (
         <p className="text-xs text-blue-500 mt-1.5 pl-5 flex items-center gap-1">
           <span className="inline-block w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-          {modelStatus}
+          {STATUS_KEYS[modelStatus] ? t(STATUS_KEYS[modelStatus]) : modelStatus}
         </p>
       )}
     </div>

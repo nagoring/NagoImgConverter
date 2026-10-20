@@ -1,8 +1,10 @@
 import { useConverterStore } from "../store/useConverterStore";
+import { useT } from "../i18n";
 
 export function DropZone() {
   const isDraggingOver = useConverterStore((s) => s.isDraggingOver);
   const fileCount = useConverterStore((s) => s.files.length);
+  const t = useT();
 
   if (fileCount > 0) {
     return (
@@ -15,7 +17,7 @@ export function DropZone() {
           }
         `}
       >
-        <span>ここに画像をドロップして追加</span>
+        <span>{t("dropzone.add")}</span>
       </div>
     );
   }
@@ -33,9 +35,9 @@ export function DropZone() {
     >
       <div className="text-5xl select-none">🖼️</div>
       <div className="text-center">
-        <p className="font-semibold text-gray-700">画像をここにドロップ</p>
+        <p className="font-semibold text-gray-700">{t("dropzone.title")}</p>
         <p className="text-sm text-gray-500 mt-1">
-          PNG / JPEG / WebP / GIF / BMP に対応
+          {t("dropzone.supported")}
         </p>
       </div>
     </div>
