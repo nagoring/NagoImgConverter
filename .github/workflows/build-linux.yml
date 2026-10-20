@@ -1,0 +1,72 @@
+name: Build Linux
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+# Release upload (softprops/action-gh-release) needs write access
+permissions:
+  contents: write
+
+jobs:
+  build-linux:
+    # Older glibc base so the AppImage runs on more distributions
+    runs-on: ubuntu-22.04
+
+    env:
+      APPIMAGE_PATH: src-tauri/target/release/bundle/appimage/NagoImgConverter_linux_x86_64.AppImage
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-gnu
+
+      - name: Cache Rust
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install native dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev \
+            librsvg2-dev patchelf libclang-dev clang file
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      # AppImage bundles GTK/WebKit libs so it runs without installing
+      - name: Build Tauri app (AppImage)
+        run: npm run tauri build -- --bundles appimage
+
+      # Fixed file name so README's releases/latest/download link stays valid
+      - name: Rename AppImage
+        run: |
+          mv src-tauri/target/release/bundle/appimage/NagoImgConverter_*.AppImage "$APPIMAGE_PATH"
+          ls -lh "$APPIMAGE_PATH"
+
+      - name: Upload artifact (branch builds)
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: NagoImgConverter-linux-x86_64
+          path: ${{ env.APPIMAGE_PATH }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload to GitHub Release (tag builds)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.APPIMAGE_PATH }}

@@ -29,6 +29,7 @@
 |---|---|
 | Windows (x64) | [nago-img-converter.exe](https://github.com/nagoring/NagoImgConverter/releases/latest/download/nago-img-converter.exe)（インストール不要） |
 | macOS (Apple Silicon) | [NagoImgConverter_macos_aarch64.dmg](https://github.com/nagoring/NagoImgConverter/releases/latest/download/NagoImgConverter_macos_aarch64.dmg) |
+| Linux (x64) | [NagoImgConverter_linux_x86_64.AppImage](https://github.com/nagoring/NagoImgConverter/releases/latest/download/NagoImgConverter_linux_x86_64.AppImage)（`chmod +x` して実行） |
 
 過去のバージョンは [Releases](https://github.com/nagoring/NagoImgConverter/releases) から。
 
