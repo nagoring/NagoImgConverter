@@ -37,11 +37,12 @@ jobs:
         with:
           workspaces: src-tauri
 
+      # nasm: required by rav1e (AVIF encoder) asm build
       - name: Install native dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev \
-            librsvg2-dev patchelf libclang-dev clang file
+            librsvg2-dev patchelf libclang-dev clang file nasm
 
       - name: Install frontend dependencies
         run: npm ci
